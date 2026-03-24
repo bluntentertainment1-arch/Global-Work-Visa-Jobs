@@ -1,0 +1,539 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1077524C4166B4091C6C6535 /* HomeFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12BD88116B7DBDE82B9CE362 /* HomeFeedView.swift */; };
+		1343896E1798D46122B21305 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2273D1350545A0C9AE08D9C /* NetworkService.swift */; };
+		1F184A3BB4339397D7EAC342 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D34C52A9F5B0CD7F58E591 /* AppDelegate.swift */; };
+		219848E9AE7651DEB3243544 /* GDPRConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2524F4084C9D4686D002B53 /* GDPRConsentManager.swift */; };
+		22FF8FCE2FED7E2157E00B2E /* GoogleSheetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4D4B5D9E38E65577D29F09 /* GoogleSheetsService.swift */; };
+		27C7E700B86F9536E6856A38 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C71F8DCB11120162F5B884E /* ThemeManager.swift */; };
+		287E46C49681B8D2F4E9C5DA /* AppPrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC354BAB90969D145959C737 /* AppPrivacyPolicyView.swift */; };
+		28964D0E9E5487F9E4B5102B /* ContactUsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C6418BBD0A805F57904CC1 /* ContactUsView.swift */; };
+		45CF62288DE92E1E977D5392 /* AppSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E6B65DD4C9567C800E30CB0 /* AppSettingsView.swift */; };
+		4967FE2733215F1CD4BDA185 /* Job.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361F8AB7184949EB944609D4 /* Job.swift */; };
+		59B99A1C01157CE6E0439348 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F9DD32B368889DA03538065 /* SplashScreenView.swift */; };
+		5D549191F44445BE4FE7945A /* JobApplyWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31B4D04C06A6E2DDBB2DE0C /* JobApplyWebView.swift */; };
+		5FECF2260A0E7CC9D61DDAC3 /* TermsAndConditionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD0A0B9E33645004A9407C8 /* TermsAndConditionsView.swift */; };
+		620821F6D21EF7EF5A0B1243 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6988BB0B177DCB79F97CE6F8 /* Assets.xcassets */; };
+		670F277AF1DCDD5E9531F53F /* JobListingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D67E991FC586C365BEFFB7EF /* JobListingsView.swift */; };
+		67EB4EA8122A649F817F3B2D /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292FDE8DD11BDE5A0071C6E8 /* CreatePostView.swift */; };
+		724A0A59110F049FE2B9D519 /* JobPrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6C23C128318D456D7A7F05 /* JobPrivacyPolicyView.swift */; };
+		7398CC6D86B771B1A0BFBC9C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 26BC9F2EEA437DF913F26D60 /* Assets.xcassets */; };
+		744A9544D0BC5A76179B18ED /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9B57572E5144DC4CE9DD40 /* BannerAdView.swift */; };
+		7F5AFC3F540E88C1A85DD48C /* PostDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C26BBAE19CC48A5B13AC1C0A /* PostDetailsView.swift */; };
+		8377F6D913E95E3A9D7A0681 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71E185A4CD78C503B014C83 /* SettingsView.swift */; };
+		895947389B613B5F39856470 /* RewardedAdPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813D4C15A91F91EAAD947B1C /* RewardedAdPromptView.swift */; };
+		8C97A1FDFAB9CF7CB1398838 /* ModernFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAF7379E14E7087C6F228B5 /* ModernFiltersView.swift */; };
+		8F6E034F1992328EB657085E /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B1AF108A0134AF58832F30 /* Models.swift */; };
+		94A3A811A7B605FE01BEE07E /* WebJobsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFED99E7B3FC1303D9E28BC1 /* WebJobsView.swift */; };
+		9CF736DB518CA7062B2A2335 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B6AD51766FD3EDF406C219 /* AppLogger.swift */; };
+		AC498A3886666CCA8FE5485D /* GlobalWorkVisaJobsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1344543DC885E326C0B32DA /* GlobalWorkVisaJobsApp.swift */; };
+		BA74224735CB7B6B07FE5158 /* JobDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB53DB52F3C4F9B3062CB32F /* JobDetailsView.swift */; };
+		BE6307FB1D08D820AEC2913A /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB40B9860D2C4A84AB67E6D /* AdMobManager.swift */; };
+		C2AE767FE8A448A2740A2729 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFE5CC80455979738962C39 /* AppConstants.swift */; };
+		CA0276BD32DAD7E95366EDF0 /* AuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15C1F9A5832388A3962B8AA8 /* AuthenticationView.swift */; };
+		CB1168CECF34384B2109E123 /* ModernJobDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB6E229EFF5A49AC4F38AE0 /* ModernJobDetailsView.swift */; };
+		CB2E452C3221CEB3A41C7A9B /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE1BE5F920F28D755E894C2 /* PrivacyPolicyView.swift */; };
+		D4254C66AA95C8D1299F7608 /* GDPRConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2B47D982B1D25C3CEC14B5 /* GDPRConsentView.swift */; };
+		D80DC89C129F70BC2DEB4EDF /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACFF5215F3459869E98B311 /* MainTabView.swift */; };
+		DADD4EF7A2E2616A222C97D8 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB354691982BF5DDFAC65EB7 /* NotificationManager.swift */; };
+		DD7B403E88409A228A620D51 /* AboutUsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73A4E628BDCA871E6F21EE6 /* AboutUsView.swift */; };
+		E2874AE2954BDC28A4E1D374 /* BannerAdContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFC49CA980B3EC045C176F5 /* BannerAdContainerView.swift */; };
+		F1FB5D7744482C7106D46FE6 /* Pods_GlobalWorkVisaJobs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0C54122D62E2CB17B86CA5B /* Pods_GlobalWorkVisaJobs.framework */; };
+		FB58B15E9476466FEB8D7259 /* JobListingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38870B3900132BDBDCAB889C /* JobListingsViewModel.swift */; };
+		FD78299E7A1CE5D27B43EBE7 /* FiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF40C90C43FA2B7706B9A60 /* FiltersView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		005672F797C1590AC8E7656E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0DB6E229EFF5A49AC4F38AE0 /* ModernJobDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernJobDetailsView.swift; sourceTree = "<group>"; };
+		0DD0A0B9E33645004A9407C8 /* TermsAndConditionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsAndConditionsView.swift; sourceTree = "<group>"; };
+		0EAF7379E14E7087C6F228B5 /* ModernFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernFiltersView.swift; sourceTree = "<group>"; };
+		0F3C6BC05074CADF7B535896 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		0F4D4B5D9E38E65577D29F09 /* GoogleSheetsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSheetsService.swift; sourceTree = "<group>"; };
+		12BD88116B7DBDE82B9CE362 /* HomeFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeedView.swift; sourceTree = "<group>"; };
+		15C1F9A5832388A3962B8AA8 /* AuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationView.swift; sourceTree = "<group>"; };
+		170684063F5233CD4BC23D33 /* Pods-GlobalWorkVisaJobs.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GlobalWorkVisaJobs.debug.xcconfig"; path = "Target Support Files/Pods-GlobalWorkVisaJobs/Pods-GlobalWorkVisaJobs.debug.xcconfig"; sourceTree = "<group>"; };
+		1F9DD32B368889DA03538065 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		26BC9F2EEA437DF913F26D60 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		292FDE8DD11BDE5A0071C6E8 /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
+		361F8AB7184949EB944609D4 /* Job.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Job.swift; sourceTree = "<group>"; };
+		38870B3900132BDBDCAB889C /* JobListingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobListingsViewModel.swift; sourceTree = "<group>"; };
+		3E6B65DD4C9567C800E30CB0 /* AppSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsView.swift; sourceTree = "<group>"; };
+		49B6AD51766FD3EDF406C219 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
+		50861F99714D137EDFB65098 /* Pods-GlobalWorkVisaJobs.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GlobalWorkVisaJobs.release.xcconfig"; path = "Target Support Files/Pods-GlobalWorkVisaJobs/Pods-GlobalWorkVisaJobs.release.xcconfig"; sourceTree = "<group>"; };
+		55D34C52A9F5B0CD7F58E591 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Sources/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
+		57C6418BBD0A805F57904CC1 /* ContactUsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactUsView.swift; path = Sources/ContactUsView.swift; sourceTree = SOURCE_ROOT; };
+		5802F72C18718344F677F258 /* GlobalWorkVisaJobs.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GlobalWorkVisaJobs.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F9B57572E5144DC4CE9DD40 /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAdView.swift; sourceTree = "<group>"; };
+		6988BB0B177DCB79F97CE6F8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		813D4C15A91F91EAAD947B1C /* RewardedAdPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RewardedAdPromptView.swift; path = Sources/RewardedAdPromptView.swift; sourceTree = SOURCE_ROOT; };
+		8CF40C90C43FA2B7706B9A60 /* FiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiltersView.swift; sourceTree = "<group>"; };
+		9AFE5CC80455979738962C39 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		9C71F8DCB11120162F5B884E /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		9E6C23C128318D456D7A7F05 /* JobPrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobPrivacyPolicyView.swift; sourceTree = "<group>"; };
+		A0C54122D62E2CB17B86CA5B /* Pods_GlobalWorkVisaJobs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GlobalWorkVisaJobs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A7B1AF108A0134AF58832F30 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		AC2B47D982B1D25C3CEC14B5 /* GDPRConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GDPRConsentView.swift; path = Sources/GDPRConsentView.swift; sourceTree = SOURCE_ROOT; };
+		AC354BAB90969D145959C737 /* AppPrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppPrivacyPolicyView.swift; path = Sources/AppPrivacyPolicyView.swift; sourceTree = SOURCE_ROOT; };
+		B1344543DC885E326C0B32DA /* GlobalWorkVisaJobsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalWorkVisaJobsApp.swift; sourceTree = "<group>"; };
+		B31B4D04C06A6E2DDBB2DE0C /* JobApplyWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobApplyWebView.swift; sourceTree = "<group>"; };
+		B73A4E628BDCA871E6F21EE6 /* AboutUsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AboutUsView.swift; path = Sources/AboutUsView.swift; sourceTree = SOURCE_ROOT; };
+		C2273D1350545A0C9AE08D9C /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		C2524F4084C9D4686D002B53 /* GDPRConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GDPRConsentManager.swift; path = Sources/GDPRConsentManager.swift; sourceTree = SOURCE_ROOT; };
+		C26BBAE19CC48A5B13AC1C0A /* PostDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDetailsView.swift; sourceTree = "<group>"; };
+		CB53DB52F3C4F9B3062CB32F /* JobDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobDetailsView.swift; sourceTree = "<group>"; };
+		CDFC49CA980B3EC045C176F5 /* BannerAdContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BannerAdContainerView.swift; path = Sources/BannerAdContainerView.swift; sourceTree = SOURCE_ROOT; };
+		D67E991FC586C365BEFFB7EF /* JobListingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobListingsView.swift; sourceTree = "<group>"; };
+		DBE1BE5F920F28D755E894C2 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
+		DFED99E7B3FC1303D9E28BC1 /* WebJobsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebJobsView.swift; sourceTree = "<group>"; };
+		E71E185A4CD78C503B014C83 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		EAB40B9860D2C4A84AB67E6D /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
+		FACFF5215F3459869E98B311 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		FB354691982BF5DDFAC65EB7 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Sources/NotificationManager.swift; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A5E5B24FC8EAC5FC47755563 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F1FB5D7744482C7106D46FE6 /* Pods_GlobalWorkVisaJobs.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0919F1107A691A9D93868A3B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0F3C6BC05074CADF7B535896 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		09BCB856ACAC33542F25B833 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A0C54122D62E2CB17B86CA5B /* Pods_GlobalWorkVisaJobs.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8AEBF5AE4AFB9F62433E0DE7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5802F72C18718344F677F258 /* GlobalWorkVisaJobs.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B6540072E8840CDD1ABC5FC7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				170684063F5233CD4BC23D33 /* Pods-GlobalWorkVisaJobs.debug.xcconfig */,
+				50861F99714D137EDFB65098 /* Pods-GlobalWorkVisaJobs.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		D47171B3A6F319244F197230 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				EAB40B9860D2C4A84AB67E6D /* AdMobManager.swift */,
+				9AFE5CC80455979738962C39 /* AppConstants.swift */,
+				49B6AD51766FD3EDF406C219 /* AppLogger.swift */,
+				3E6B65DD4C9567C800E30CB0 /* AppSettingsView.swift */,
+				6988BB0B177DCB79F97CE6F8 /* Assets.xcassets */,
+				15C1F9A5832388A3962B8AA8 /* AuthenticationView.swift */,
+				5F9B57572E5144DC4CE9DD40 /* BannerAdView.swift */,
+				292FDE8DD11BDE5A0071C6E8 /* CreatePostView.swift */,
+				8CF40C90C43FA2B7706B9A60 /* FiltersView.swift */,
+				B1344543DC885E326C0B32DA /* GlobalWorkVisaJobsApp.swift */,
+				0F4D4B5D9E38E65577D29F09 /* GoogleSheetsService.swift */,
+				12BD88116B7DBDE82B9CE362 /* HomeFeedView.swift */,
+				005672F797C1590AC8E7656E /* Info.plist */,
+				361F8AB7184949EB944609D4 /* Job.swift */,
+				B31B4D04C06A6E2DDBB2DE0C /* JobApplyWebView.swift */,
+				CB53DB52F3C4F9B3062CB32F /* JobDetailsView.swift */,
+				D67E991FC586C365BEFFB7EF /* JobListingsView.swift */,
+				38870B3900132BDBDCAB889C /* JobListingsViewModel.swift */,
+				9E6C23C128318D456D7A7F05 /* JobPrivacyPolicyView.swift */,
+				FACFF5215F3459869E98B311 /* MainTabView.swift */,
+				A7B1AF108A0134AF58832F30 /* Models.swift */,
+				0EAF7379E14E7087C6F228B5 /* ModernFiltersView.swift */,
+				0DB6E229EFF5A49AC4F38AE0 /* ModernJobDetailsView.swift */,
+				C2273D1350545A0C9AE08D9C /* NetworkService.swift */,
+				C26BBAE19CC48A5B13AC1C0A /* PostDetailsView.swift */,
+				DBE1BE5F920F28D755E894C2 /* PrivacyPolicyView.swift */,
+				E71E185A4CD78C503B014C83 /* SettingsView.swift */,
+				1F9DD32B368889DA03538065 /* SplashScreenView.swift */,
+				0DD0A0B9E33645004A9407C8 /* TermsAndConditionsView.swift */,
+				9C71F8DCB11120162F5B884E /* ThemeManager.swift */,
+				DFED99E7B3FC1303D9E28BC1 /* WebJobsView.swift */,
+				B73A4E628BDCA871E6F21EE6 /* AboutUsView.swift */,
+				AC354BAB90969D145959C737 /* AppPrivacyPolicyView.swift */,
+				57C6418BBD0A805F57904CC1 /* ContactUsView.swift */,
+				FB354691982BF5DDFAC65EB7 /* NotificationManager.swift */,
+				AC2B47D982B1D25C3CEC14B5 /* GDPRConsentView.swift */,
+				C2524F4084C9D4686D002B53 /* GDPRConsentManager.swift */,
+				55D34C52A9F5B0CD7F58E591 /* AppDelegate.swift */,
+				CDFC49CA980B3EC045C176F5 /* BannerAdContainerView.swift */,
+				813D4C15A91F91EAAD947B1C /* RewardedAdPromptView.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		E9D3B9EF260922FC52FE922E = {
+			isa = PBXGroup;
+			children = (
+				26BC9F2EEA437DF913F26D60 /* Assets.xcassets */,
+				0919F1107A691A9D93868A3B /* Resources */,
+				D47171B3A6F319244F197230 /* Sources */,
+				8AEBF5AE4AFB9F62433E0DE7 /* Products */,
+				B6540072E8840CDD1ABC5FC7 /* Pods */,
+				09BCB856ACAC33542F25B833 /* Frameworks */,
+			);
+			indentWidth = 2;
+			sourceTree = "<group>";
+			tabWidth = 2;
+			usesTabs = 0;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E7149E1FCBD3984B6DB42833 /* GlobalWorkVisaJobs */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32D162949DE9EC67EE423EB3 /* Build configuration list for PBXNativeTarget "GlobalWorkVisaJobs" */;
+			buildPhases = (
+				1CC1E0E0B388332FE1E2C051 /* [CP] Check Pods Manifest.lock */,
+				7F009C805397EA075346EC92 /* Sources */,
+				E78151CB9D6C6C6D4C9BCDCD /* Resources */,
+				A5E5B24FC8EAC5FC47755563 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GlobalWorkVisaJobs;
+			productName = GlobalWorkVisaJobs;
+			productReference = 5802F72C18718344F677F258 /* GlobalWorkVisaJobs.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C13E487708A55765C10A56A0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = D73338F898DA1B6547AE0901 /* Build configuration list for PBXProject "GlobalWorkVisaJobs" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = E9D3B9EF260922FC52FE922E;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 54;
+			productRefGroup = 8AEBF5AE4AFB9F62433E0DE7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E7149E1FCBD3984B6DB42833 /* GlobalWorkVisaJobs */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E78151CB9D6C6C6D4C9BCDCD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				620821F6D21EF7EF5A0B1243 /* Assets.xcassets in Resources */,
+				7398CC6D86B771B1A0BFBC9C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1CC1E0E0B388332FE1E2C051 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-GlobalWorkVisaJobs-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7F009C805397EA075346EC92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE6307FB1D08D820AEC2913A /* AdMobManager.swift in Sources */,
+				C2AE767FE8A448A2740A2729 /* AppConstants.swift in Sources */,
+				9CF736DB518CA7062B2A2335 /* AppLogger.swift in Sources */,
+				45CF62288DE92E1E977D5392 /* AppSettingsView.swift in Sources */,
+				CA0276BD32DAD7E95366EDF0 /* AuthenticationView.swift in Sources */,
+				744A9544D0BC5A76179B18ED /* BannerAdView.swift in Sources */,
+				67EB4EA8122A649F817F3B2D /* CreatePostView.swift in Sources */,
+				FD78299E7A1CE5D27B43EBE7 /* FiltersView.swift in Sources */,
+				AC498A3886666CCA8FE5485D /* GlobalWorkVisaJobsApp.swift in Sources */,
+				22FF8FCE2FED7E2157E00B2E /* GoogleSheetsService.swift in Sources */,
+				1077524C4166B4091C6C6535 /* HomeFeedView.swift in Sources */,
+				4967FE2733215F1CD4BDA185 /* Job.swift in Sources */,
+				5D549191F44445BE4FE7945A /* JobApplyWebView.swift in Sources */,
+				BA74224735CB7B6B07FE5158 /* JobDetailsView.swift in Sources */,
+				670F277AF1DCDD5E9531F53F /* JobListingsView.swift in Sources */,
+				FB58B15E9476466FEB8D7259 /* JobListingsViewModel.swift in Sources */,
+				724A0A59110F049FE2B9D519 /* JobPrivacyPolicyView.swift in Sources */,
+				D80DC89C129F70BC2DEB4EDF /* MainTabView.swift in Sources */,
+				8F6E034F1992328EB657085E /* Models.swift in Sources */,
+				8C97A1FDFAB9CF7CB1398838 /* ModernFiltersView.swift in Sources */,
+				CB1168CECF34384B2109E123 /* ModernJobDetailsView.swift in Sources */,
+				1343896E1798D46122B21305 /* NetworkService.swift in Sources */,
+				7F5AFC3F540E88C1A85DD48C /* PostDetailsView.swift in Sources */,
+				CB2E452C3221CEB3A41C7A9B /* PrivacyPolicyView.swift in Sources */,
+				8377F6D913E95E3A9D7A0681 /* SettingsView.swift in Sources */,
+				59B99A1C01157CE6E0439348 /* SplashScreenView.swift in Sources */,
+				5FECF2260A0E7CC9D61DDAC3 /* TermsAndConditionsView.swift in Sources */,
+				27C7E700B86F9536E6856A38 /* ThemeManager.swift in Sources */,
+				94A3A811A7B605FE01BEE07E /* WebJobsView.swift in Sources */,
+				DD7B403E88409A228A620D51 /* AboutUsView.swift in Sources */,
+				287E46C49681B8D2F4E9C5DA /* AppPrivacyPolicyView.swift in Sources */,
+				28964D0E9E5487F9E4B5102B /* ContactUsView.swift in Sources */,
+				DADD4EF7A2E2616A222C97D8 /* NotificationManager.swift in Sources */,
+				D4254C66AA95C8D1299F7608 /* GDPRConsentView.swift in Sources */,
+				219848E9AE7651DEB3243544 /* GDPRConsentManager.swift in Sources */,
+				1F184A3BB4339397D7EAC342 /* AppDelegate.swift in Sources */,
+				E2874AE2954BDC28A4E1D374 /* BannerAdContainerView.swift in Sources */,
+				895947389B613B5F39856470 /* RewardedAdPromptView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1C86E7805EDCFE61FA86094E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 50861F99714D137EDFB65098 /* Pods-GlobalWorkVisaJobs.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				BUNDLE_DISPLAY_NAME = "Global Work Visa Jobs";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				EXECUTABLE_NAME = "$(PRODUCT_NAME)";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INFOPLIST_KEY_PrivacyManifestPath = Resources/PrivacyInfo.xcprivacy;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kidblunt.microsocialnetwork;
+				PRODUCT_NAME = GlobalWorkVisaJobs;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		6CB12EB6A2B17C375BC37DB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 170684063F5233CD4BC23D33 /* Pods-GlobalWorkVisaJobs.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				BUNDLE_DISPLAY_NAME = "Global Work Visa Jobs";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				EXECUTABLE_NAME = "$(PRODUCT_NAME)";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INFOPLIST_KEY_PrivacyManifestPath = Resources/PrivacyInfo.xcprivacy;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kidblunt.microsocialnetwork;
+				PRODUCT_NAME = GlobalWorkVisaJobs;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA380F57461DEF0A8243D14B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		ECAB0D84CD27A82F53A5C87F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		32D162949DE9EC67EE423EB3 /* Build configuration list for PBXNativeTarget "GlobalWorkVisaJobs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6CB12EB6A2B17C375BC37DB3 /* Debug */,
+				1C86E7805EDCFE61FA86094E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D73338F898DA1B6547AE0901 /* Build configuration list for PBXProject "GlobalWorkVisaJobs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA380F57461DEF0A8243D14B /* Debug */,
+				ECAB0D84CD27A82F53A5C87F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C13E487708A55765C10A56A0 /* Project object */;
+}
