@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "91D224DAE1F7F5BF75E0912D"
-               BuildableName = "CleanerGuru.app"
-               BlueprintName = "CleanerGuru"
-               ReferencedContainer = "container:CleanerGuru.xcodeproj">
+               BuildableName = "microsocialnetwork.app"
+               BlueprintName = "microsocialnetwork"
+               ReferencedContainer = "container:microsocialnetwork.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "91D224DAE1F7F5BF75E0912D"
-            BuildableName = "CleanerGuru.app"
-            BlueprintName = "CleanerGuru"
-            ReferencedContainer = "container:CleanerGuru.xcodeproj">
+            BuildableName = "microsocialnetwork.app"
+            BlueprintName = "microsocialnetwork"
+            ReferencedContainer = "container:microsocialnetwork.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "91D224DAE1F7F5BF75E0912D"
-            BuildableName = "CleanerGuru.app"
-            BlueprintName = "CleanerGuru"
-            ReferencedContainer = "container:CleanerGuru.xcodeproj">
+            BuildableName = "microsocialnetwork.app"
+            BlueprintName = "microsocialnetwork"
+            ReferencedContainer = "container:microsocialnetwork.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
