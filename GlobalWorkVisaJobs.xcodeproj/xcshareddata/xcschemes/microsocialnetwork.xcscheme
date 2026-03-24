@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "91D224DAE1F7F5BF75E0912D"
-               BuildableName = "microsocialnetwork.app"
-               BlueprintName = "microsocialnetwork"
-               ReferencedContainer = "container:microsocialnetwork.xcodeproj">
+               BuildableName = "GlobalWorkVisaJobs.app"
+               BlueprintName = "GlobalWorkVisaJobs"
+               ReferencedContainer = "container:GlobalWorkVisaJobs.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "91D224DAE1F7F5BF75E0912D"
-            BuildableName = "microsocialnetwork.app"
-            BlueprintName = "microsocialnetwork"
-            ReferencedContainer = "container:microsocialnetwork.xcodeproj">
+            BuildableName = "GlobalWorkVisaJobs.app"
+            BlueprintName = "GlobalWorkVisaJobs"
+            ReferencedContainer = "container:GlobalWorkVisaJobs.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "91D224DAE1F7F5BF75E0912D"
-            BuildableName = "microsocialnetwork.app"
-            BlueprintName = "microsocialnetwork"
-            ReferencedContainer = "container:microsocialnetwork.xcodeproj">
+            BuildableName = "GlobalWorkVisaJobs.app"
+            BlueprintName = "GlobalWorkVisaJobs"
+            ReferencedContainer = "container:GlobalWorkVisaJobs.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
