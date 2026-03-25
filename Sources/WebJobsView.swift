@@ -523,26 +523,27 @@ struct WebJobsContentView: UIViewRepresentable {
         }
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            if let url = navigationAction.request.url {
-                if url.scheme == "tel" || url.scheme == "mailto" {
-                    AdMobManager.shared.handleExternalLinkClick()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        UIApplication.shared.open(url)
-                    }
-                    decisionHandler(.cancel)
-                    return
-                }
-                
-                let hostString = url.host ?? ""
-                if !hostString.contains("mobileworkvisajobs.pages.dev") && navigationAction.navigationType == .linkActivated {
-                    AdMobManager.shared.handleExternalLinkClick()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        UIApplication.shared.open(url)
-                    }
-                    decisionHandler(.cancel)
-                    return
-                }
+            guard let url = navigationAction.request.url else {
+                decisionHandler(.allow)
+                return
             }
+            
+            // Handle phone/email links
+            if url.scheme == "tel" || url.scheme == "mailto" {
+                AdMobManager.shared.openExternalURL(url)
+                decisionHandler(.cancel)
+                return
+            }
+            
+            // Handle external links (not your webapp domain)
+            let hostString = url.host ?? ""
+            if !hostString.contains("mobileworkvisajobs.pages.dev") && navigationAction.navigationType == .linkActivated {
+                // Use the new method that waits for ad to close
+                AdMobManager.shared.openExternalURL(url)
+                decisionHandler(.cancel)
+                return
+            }
+            
             decisionHandler(.allow)
         }
         
