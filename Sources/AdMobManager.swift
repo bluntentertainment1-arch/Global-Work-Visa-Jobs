@@ -18,6 +18,7 @@ class AdMobManager: NSObject, ObservableObject {
 
     private var interstitialAd: InterstitialAd?
     private var rewardedAd: RewardedAd?
+
     private var rewardedAdTimer: Timer?
     private var lastRewardedAdTime: Date?
     private var interstitialCompletion: (() -> Void)?
@@ -27,27 +28,45 @@ class AdMobManager: NSObject, ObservableObject {
         startAdMob()
     }
 
+    // MARK: - Start AdMob
+
     private func startAdMob() {
+
         MobileAds.shared.start { status in
             print("✅ AdMob started")
+            print(status.adapterStatusesByClassName)
         }
+
         loadInterstitialAd()
         loadRewardedAd()
         startRewardedAdTimer()
     }
 
     // MARK: - Banner
-    func getBannerAdUnitID() -> String { bannerAdUnitID }
+
+    func getBannerAdUnitID() -> String {
+        bannerAdUnitID
+    }
 
     // MARK: - Interstitial
+
     func loadInterstitialAd() {
+
         let request = Request()
-        InterstitialAd.load(with: interstitialAdUnitID, request: request) { [weak self] ad, error in
+
+        InterstitialAd.load(
+            with: interstitialAdUnitID,
+            request: request
+        ) { [weak self] ad, error in
+
             if let error = error {
-                print("❌ Interstitial failed: \(error)")
+                print("❌ Interstitial failed: \(error.localizedDescription)")
                 self?.isInterstitialLoaded = false
                 return
             }
+
+            print("✅ Interstitial loaded")
+
             self?.interstitialAd = ad
             self?.interstitialAd?.fullScreenContentDelegate = self
             self?.isInterstitialLoaded = true
@@ -55,19 +74,39 @@ class AdMobManager: NSObject, ObservableObject {
     }
 
     func showInterstitialAd(completion: (() -> Void)? = nil) {
+
         guard let ad = interstitialAd else {
             print("⚠️ Interstitial not ready")
             completion?()
             loadInterstitialAd()
             return
         }
+
         guard let root = getRootViewController() else {
             print("❌ Root VC missing")
             completion?()
             return
         }
+
         interstitialCompletion = completion
         ad.present(from: root)
+    }
+
+    // MARK: - Legacy method for backward compatibility (deprecated)
+    func handleExternalLinkClick() {
+        showInterstitialAd()
+    }
+
+    // MARK: - Handle Apply Button Tap (for JobDetailsView)
+    func handleApplyButtonTap(jobId: String, completion: (() -> Void)? = nil) {
+        print("📋 Apply button tapped for job: \(jobId)")
+        showInterstitialAd(completion: completion)
+    }
+
+    // MARK: - Handle Featured Job Tap (for JobDetailsView)
+    func handleFeaturedJobTap(jobId: String) {
+        print("⭐ Featured job tapped: \(jobId)")
+        // Track analytics or load specific ads for featured jobs
     }
 
     // MARK: - Universal External Link Handler
@@ -80,47 +119,129 @@ class AdMobManager: NSObject, ObservableObject {
     }
 
     // MARK: - Rewarded
+
     func loadRewardedAd() {
+
         let request = Request()
-        RewardedAd.load(with: rewardedAdUnitID, request: request) { [weak self] ad, error in
+
+        RewardedAd.load(
+            with: rewardedAdUnitID,
+            request: request
+        ) { [weak self] ad, error in
+
             if let error = error {
-                print("❌ Rewarded failed: \(error)")
+                print("❌ Rewarded failed: \(error.localizedDescription)")
                 self?.isRewardedLoaded = false
                 return
             }
+
+            print("✅ Rewarded loaded")
+
             self?.rewardedAd = ad
             self?.rewardedAd?.fullScreenContentDelegate = self
             self?.isRewardedLoaded = true
         }
     }
 
+    func showRewardedAd() {
+
+        guard let ad = rewardedAd else {
+            print("⚠️ Rewarded not ready")
+            loadRewardedAd()
+            return
+        }
+
+        guard let root = getRootViewController() else {
+            print("❌ Root VC missing")
+            return
+        }
+
+        ad.present(from: root) { [weak self] in
+
+            let reward = ad.adReward
+            print("🎁 Reward earned: \(reward.amount) \(reward.type)")
+            self?.dismissRewardedPrompt()
+        }
+    }
+
+    // MARK: - Rewarded Prompt Timer
+
     private func startRewardedAdTimer() {
+
         rewardedAdTimer?.invalidate()
-        rewardedAdTimer = Timer.scheduledTimer(withTimeInterval: 240, repeats: true) { [weak self] _ in
+
+        rewardedAdTimer = Timer.scheduledTimer(
+            withTimeInterval: 240,
+            repeats: true
+        ) { [weak self] _ in
+
             DispatchQueue.main.async {
+                print("⏰ Showing rewarded prompt")
                 self?.showRewardedAdPrompt = true
             }
         }
     }
 
+    func dismissRewardedPrompt() {
+
+        DispatchQueue.main.async {
+            self.showRewardedAdPrompt = false
+            self.lastRewardedAdTime = Date()
+        }
+    }
+
+    // MARK: - Root Controller
+
     private func getRootViewController() -> UIViewController? {
+
         guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
-        else { return nil }
+        else {
+            return nil
+        }
+
         return root
     }
 }
 
 extension AdMobManager: FullScreenContentDelegate {
+
+    func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+        print("📺 Ad will present")
+    }
+
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+
+        print("📉 Ad dismissed")
+
         if ad === interstitialAd {
             interstitialAd = nil
             interstitialCompletion?()
             interstitialCompletion = nil
             loadInterstitialAd()
         }
+
         if ad === rewardedAd {
             rewardedAd = nil
+            loadRewardedAd()
+            dismissRewardedPrompt()
+        }
+    }
+
+    func ad(
+        _ ad: FullScreenPresentingAd,
+        didFailToPresentFullScreenContentWithError error: Error
+    ) {
+
+        print("❌ Failed to present ad: \(error.localizedDescription)")
+
+        if ad === interstitialAd {
+            interstitialCompletion?()
+            interstitialCompletion = nil
+            loadInterstitialAd()
+        }
+
+        if ad === rewardedAd {
             loadRewardedAd()
         }
     }
