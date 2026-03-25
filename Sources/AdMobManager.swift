@@ -12,6 +12,7 @@ class AdMobManager: NSObject, ObservableObject {
     @Published var isRewardedLoaded = false
     @Published var showRewardedAdPrompt = false
 
+    // Test Ad Units (for TestFlight testing)
     private let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
     private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
     private let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
@@ -33,7 +34,7 @@ class AdMobManager: NSObject, ObservableObject {
     private func startAdMob() {
 
         MobileAds.shared.start { status in
-            print("✅ AdMob started")
+            print("✅ AdMob started with TEST ads")
             print(status.adapterStatusesByClassName)
         }
 
@@ -92,21 +93,20 @@ class AdMobManager: NSObject, ObservableObject {
         ad.present(from: root)
     }
 
-    // MARK: - Legacy method for backward compatibility (deprecated)
+    // MARK: - Legacy method for backward compatibility
     func handleExternalLinkClick() {
         showInterstitialAd()
     }
 
-    // MARK: - Handle Apply Button Tap (for JobDetailsView)
+    // MARK: - Handle Apply Button Tap
     func handleApplyButtonTap(jobId: String, completion: (() -> Void)? = nil) {
         print("📋 Apply button tapped for job: \(jobId)")
         showInterstitialAd(completion: completion)
     }
 
-    // MARK: - Handle Featured Job Tap (for JobDetailsView)
+    // MARK: - Handle Featured Job Tap
     func handleFeaturedJobTap(jobId: String) {
         print("⭐ Featured job tapped: \(jobId)")
-        // Track analytics or load specific ads for featured jobs
     }
 
     // MARK: - Universal External Link Handler
@@ -116,6 +116,12 @@ class AdMobManager: NSObject, ObservableObject {
                 completion?()
             }
         }
+    }
+
+    // MARK: - Menu Item Interstitial Handler
+    func showInterstitialForMenuItem(menuTitle: String, completion: (() -> Void)? = nil) {
+        print("📱 Menu item clicked: \(menuTitle)")
+        showInterstitialAd(completion: completion)
     }
 
     // MARK: - Rewarded
