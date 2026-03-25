@@ -9,7 +9,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         
         // Initialize AdMob SDK
-        GADMobileAds.sharedInstance().start { status in
+        MobileAds.shared.start { status in
             print("✅ AdMob SDK started")
             print(status.adapterStatusesByClassName)
         }
