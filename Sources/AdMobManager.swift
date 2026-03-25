@@ -21,6 +21,9 @@ class AdMobManager: NSObject, ObservableObject {
 
     private var rewardedAdTimer: Timer?
     private var lastRewardedAdTime: Date?
+    
+    // Completion handler for when interstitial ad is dismissed
+    private var interstitialCompletion: (() -> Void)?
 
     private override init() {
         super.init()
@@ -72,19 +75,25 @@ class AdMobManager: NSObject, ObservableObject {
         }
     }
 
-    func showInterstitialAd() {
+    func showInterstitialAd(completion: (() -> Void)? = nil) {
 
         guard let ad = interstitialAd else {
             print("⚠️ Interstitial not ready")
+            // If no ad, execute completion immediately
+            completion?()
             loadInterstitialAd()
             return
         }
 
         guard let root = getRootViewController() else {
             print("❌ Root VC missing")
+            // If no root VC, execute completion immediately
+            completion?()
             return
         }
 
+        // Store completion handler to be called when ad is dismissed
+        interstitialCompletion = completion
         ad.present(from: root)
     }
 
@@ -93,9 +102,9 @@ class AdMobManager: NSObject, ObservableObject {
     }
 
     // MARK: - Handle Apply Button Tap (for JobDetailsView)
-    func handleApplyButtonTap(jobId: String) {
+    func handleApplyButtonTap(jobId: String, completion: (() -> Void)? = nil) {
         print("📋 Apply button tapped for job: \(jobId)")
-        showInterstitialAd()
+        showInterstitialAd(completion: completion)
     }
 
     // MARK: - Handle Featured Job Tap (for JobDetailsView)
@@ -202,6 +211,9 @@ extension AdMobManager: FullScreenContentDelegate {
 
         if ad === interstitialAd {
             interstitialAd = nil
+            // Execute completion handler when interstitial is dismissed
+            interstitialCompletion?()
+            interstitialCompletion = nil
             loadInterstitialAd()
         }
 
@@ -220,6 +232,9 @@ extension AdMobManager: FullScreenContentDelegate {
         print("❌ Failed to present ad: \(error.localizedDescription)")
 
         if ad === interstitialAd {
+            // Execute completion handler even if ad fails to present
+            interstitialCompletion?()
+            interstitialCompletion = nil
             loadInterstitialAd()
         }
 
