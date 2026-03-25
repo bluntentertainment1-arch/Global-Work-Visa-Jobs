@@ -92,6 +92,18 @@ class AdMobManager: NSObject, ObservableObject {
         showInterstitialAd()
     }
 
+    // MARK: - Handle Apply Button Tap (for JobDetailsView)
+    func handleApplyButtonTap(jobId: String) {
+        print("📋 Apply button tapped for job: \(jobId)")
+        showInterstitialAd()
+    }
+
+    // MARK: - Handle Featured Job Tap (for JobDetailsView)
+    func handleFeaturedJobTap(jobId: String) {
+        print("⭐ Featured job tapped: \(jobId)")
+        // Track analytics or load specific ads for featured jobs
+    }
+
     // MARK: - Rewarded
 
     func loadRewardedAd() {
