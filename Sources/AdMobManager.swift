@@ -12,10 +12,10 @@ class AdMobManager: NSObject, ObservableObject {
     @Published var isRewardedLoaded = false
     @Published var showRewardedAdPrompt = false
 
-    // Test Ad Units (for TestFlight testing)
-    private let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
-    private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
-    private let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
+    // Live Ad Units (for App Store release)
+    private let bannerAdUnitID = "ca-app-pub-1819215492028258/7756162789"
+    private let interstitialAdUnitID = "ca-app-pub-1819215492028258/7888024720"
+    private let rewardedAdUnitID = "ca-app-pub-1819215492028258/5667520646"
 
     private var interstitialAd: InterstitialAd?
     private var rewardedAd: RewardedAd?
@@ -34,7 +34,7 @@ class AdMobManager: NSObject, ObservableObject {
     private func startAdMob() {
 
         MobileAds.shared.start { status in
-            print("✅ AdMob started with TEST ads")
+            print("✅ AdMob started with LIVE ads")
             print(status.adapterStatusesByClassName)
         }
 
