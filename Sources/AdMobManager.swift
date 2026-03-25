@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 import GoogleMobileAds
 
 class AdMobManager: NSObject, ObservableObject {
@@ -54,7 +54,7 @@ class AdMobManager: NSObject, ObservableObject {
         let request = Request()
 
         InterstitialAd.load(
-            withAdUnitID: interstitialAdUnitID,
+            with: interstitialAdUnitID,
             request: request
         ) { [weak self] ad, error in
 
@@ -85,7 +85,7 @@ class AdMobManager: NSObject, ObservableObject {
             return
         }
 
-        ad.present(fromRootViewController: root)
+        ad.present(from: root)
     }
 
     func handleExternalLinkClick() {
@@ -99,7 +99,7 @@ class AdMobManager: NSObject, ObservableObject {
         let request = Request()
 
         RewardedAd.load(
-            withAdUnitID: rewardedAdUnitID,
+            with: rewardedAdUnitID,
             request: request
         ) { [weak self] ad, error in
 
@@ -130,10 +130,11 @@ class AdMobManager: NSObject, ObservableObject {
             return
         }
 
-        ad.present(fromRootViewController: root) {
+        ad.present(from: root) { [weak self] in
 
             let reward = ad.adReward
             print("🎁 Reward earned: \(reward.amount) \(reward.type)")
+            self?.dismissRewardedPrompt()
         }
     }
 
