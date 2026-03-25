@@ -5,6 +5,7 @@ struct JobDetailsView: View {
     @Environment(\.dismiss) var dismiss
     let job: Job
     @State private var showingRedirectMessage = false
+    @State private var pendingURL: URL? = nil
     
     var body: some View {
         NavigationStack {
@@ -100,10 +101,31 @@ struct JobDetailsView: View {
                         }
                         
                         Button(action: {
-                            if job.featured {
-                                AdMobManager.shared.handleApplyButtonTap(jobId: job.id)
+                            // Store the URL first
+                            guard let url = URL(string: job.applyUrl) else {
+                                return
                             }
-                            openInSystemBrowser()
+                            pendingURL = url
+                            
+                            // Show redirect message
+                            withAnimation {
+                                showingRedirectMessage = true
+                            }
+                            
+                            // Show ad with completion handler
+                            if job.featured {
+                                AdMobManager.shared.handleApplyButtonTap(jobId: job.id) { [self] in
+                                    // This runs AFTER ad is dismissed
+                                    openPendingURL()
+                                }
+                            } else {
+                                // For non-featured jobs, just open immediately or use external link handler
+                                AdMobManager.shared.handleExternalLinkClick()
+                                // If no ad available, open immediately
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    openPendingURL()
+                                }
+                            }
                         }) {
                             HStack {
                                 Image(systemName: "paperplane.fill")
@@ -174,23 +196,35 @@ struct JobDetailsView: View {
         .tint(themeManager.navigationText)
     }
     
+    private func openPendingURL() {
+        guard let url = pendingURL else { return }
+        
+        UIApplication.shared.open(url)
+        
+        // Hide redirect message after delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation {
+                showingRedirectMessage = false
+            }
+        }
+    }
+    
     private func openInSystemBrowser() {
+        // This method is now replaced by the logic above
+        // Kept for compatibility if called from elsewhere
         guard let url = URL(string: job.applyUrl) else {
             return
         }
+        
+        pendingURL = url
         
         withAnimation {
             showingRedirectMessage = true
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            UIApplication.shared.open(url)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                withAnimation {
-                    showingRedirectMessage = false
-                }
-            }
+        // Show ad with completion handler
+        AdMobManager.shared.showInterstitialAd { [self] in
+            openPendingURL()
         }
     }
     
