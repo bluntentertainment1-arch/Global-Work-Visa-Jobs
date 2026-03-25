@@ -44,7 +44,7 @@ struct AdaptiveBannerAdContainerView: View {
         #if canImport(GoogleMobileAds)
         let frame = UIScreen.main.bounds
         let viewWidth = frame.size.width
-        let adaptiveSize = GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(viewWidth)
+        let adaptiveSize = currentOrientationAnchoredAdaptiveBanner(width: viewWidth)
         bannerHeight = adaptiveSize.size.height
         #endif
     }
