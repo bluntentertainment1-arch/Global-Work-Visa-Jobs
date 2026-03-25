@@ -1,216 +1,127 @@
 import Foundation
-import UIKit
 import GoogleMobileAds
+import UIKit
 
 class AdMobManager: NSObject, ObservableObject {
 
     static let shared = AdMobManager()
 
-    @Published var isBannerLoaded = false
-    @Published var isInterstitialLoaded = false
-    @Published var isRewardedLoaded = false
-    @Published var showRewardedAdPrompt = false
+    private var interstitialAd: InterstitialAd?
+    private var rewardedAd: RewardedAd?
 
-    private let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
-    private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
-    private let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
-
-    private var interstitialAd: GADInterstitialAd?
-    private var rewardedAd: GADRewardedAd?
-
-    private var rewardedAdTimer: Timer?
-    private var lastRewardedAdTime: Date?
-
-    private override init() {
+    override init() {
         super.init()
-        startAdMob()
     }
 
-    // MARK: - Start AdMob
+    // MARK: - Initialize AdMob
 
-    private func startAdMob() {
-
-        GADMobileAds.sharedInstance().start { status in
-            print("✅ AdMob started")
-            print(status.adapterStatusesByClassName)
-        }
-
-        loadInterstitialAd()
-        loadRewardedAd()
-        startRewardedAdTimer()
+    func start() {
+        MobileAds.shared.start(completionHandler: nil)
     }
 
-    // MARK: - Banner
+    // MARK: - Load Interstitial
 
-    func getBannerAdUnitID() -> String {
-        bannerAdUnitID
-    }
+    func loadInterstitial(adUnitID: String) {
+        let request = Request()
 
-    // MARK: - Interstitial
-
-    func loadInterstitialAd() {
-
-        let request = GADRequest()
-
-        GADInterstitialAd.load(
-            withAdUnitID: interstitialAdUnitID,
+        InterstitialAd.load(
+            with: adUnitID,
             request: request
         ) { [weak self] ad, error in
 
             if let error = error {
-                print("❌ Interstitial failed: \(error.localizedDescription)")
-                self?.isInterstitialLoaded = false
+                print("Interstitial failed to load: \(error.localizedDescription)")
                 return
             }
-
-            print("✅ Interstitial loaded")
 
             self?.interstitialAd = ad
             self?.interstitialAd?.fullScreenContentDelegate = self
-            self?.isInterstitialLoaded = true
+
+            print("Interstitial loaded")
         }
     }
 
-    func showInterstitialAd() {
+    // MARK: - Show Interstitial
 
+    func showInterstitial(from viewController: UIViewController) {
         guard let ad = interstitialAd else {
-            print("⚠️ Interstitial not ready")
-            loadInterstitialAd()
+            print("Interstitial not ready")
             return
         }
 
-        guard let root = getRootViewController() else {
-            print("❌ Root VC missing")
-            return
-        }
-
-        ad.present(fromRootViewController: root)
+        ad.present(from: viewController)
     }
 
-    func handleExternalLinkClick() {
-        showInterstitialAd()
-    }
+    // MARK: - Load Rewarded
 
-    // MARK: - Rewarded
+    func loadRewarded(adUnitID: String) {
+        let request = Request()
 
-    func loadRewardedAd() {
-
-        let request = GADRequest()
-
-        GADRewardedAd.load(
-            withAdUnitID: rewardedAdUnitID,
+        RewardedAd.load(
+            with: adUnitID,
             request: request
         ) { [weak self] ad, error in
 
             if let error = error {
-                print("❌ Rewarded failed: \(error.localizedDescription)")
-                self?.isRewardedLoaded = false
+                print("Rewarded failed to load: \(error.localizedDescription)")
                 return
             }
 
-            print("✅ Rewarded loaded")
-
             self?.rewardedAd = ad
             self?.rewardedAd?.fullScreenContentDelegate = self
-            self?.isRewardedLoaded = true
+
+            print("Rewarded loaded")
         }
     }
 
-    func showRewardedAd() {
+    // MARK: - Show Rewarded
+
+    func showRewarded(from viewController: UIViewController, rewardHandler: @escaping () -> Void) {
 
         guard let ad = rewardedAd else {
-            print("⚠️ Rewarded not ready")
-            loadRewardedAd()
+            print("Rewarded ad not ready")
             return
         }
 
-        guard let root = getRootViewController() else {
-            print("❌ Root VC missing")
-            return
+        ad.present(from: viewController) {
+            rewardHandler()
         }
-
-        ad.present(fromRootViewController: root) {
-
-            let reward = ad.adReward
-            print("🎁 Reward earned: \(reward.amount) \(reward.type)")
-        }
-    }
-
-    // MARK: - Rewarded Prompt Timer
-
-    private func startRewardedAdTimer() {
-
-        rewardedAdTimer?.invalidate()
-
-        rewardedAdTimer = Timer.scheduledTimer(
-            withTimeInterval: 240,
-            repeats: true
-        ) { [weak self] _ in
-
-            DispatchQueue.main.async {
-                print("⏰ Showing rewarded prompt")
-                self?.showRewardedAdPrompt = true
-            }
-        }
-    }
-
-    func dismissRewardedPrompt() {
-
-        DispatchQueue.main.async {
-            self.showRewardedAdPrompt = false
-            self.lastRewardedAdTime = Date()
-        }
-    }
-
-    // MARK: - Root Controller
-
-    private func getRootViewController() -> UIViewController? {
-
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
-        else {
-            return nil
-        }
-
-        return root
     }
 }
 
-extension AdMobManager: GADFullScreenContentDelegate {
+// MARK: - FullScreen Delegate
 
-    func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
-        print("📺 Ad will present")
+extension AdMobManager: FullScreenContentDelegate {
+
+    func adDidRecordImpression(_ ad: FullScreenPresentingAd) {
+        print("Ad impression recorded")
     }
 
-    func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    func adDidRecordClick(_ ad: FullScreenPresentingAd) {
+        print("Ad clicked")
+    }
 
-        print("📉 Ad dismissed")
+    func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+        print("Ad will present")
+    }
+
+    func adWillDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        print("Ad will dismiss")
+    }
+
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        print("Ad dismissed")
 
         if ad === interstitialAd {
             interstitialAd = nil
-            loadInterstitialAd()
         }
 
         if ad === rewardedAd {
             rewardedAd = nil
-            loadRewardedAd()
-            dismissRewardedPrompt()
         }
     }
 
-    func ad(
-        _ ad: GADFullScreenPresentingAd,
-        didFailToPresentFullScreenContentWithError error: Error
-    ) {
-
-        print("❌ Failed to present ad: \(error.localizedDescription)")
-
-        if ad === interstitialAd {
-            loadInterstitialAd()
-        }
-
-        if ad === rewardedAd {
-            loadRewardedAd()
-        }
+    func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        print("Ad failed to present: \(error.localizedDescription)")
     }
 }
