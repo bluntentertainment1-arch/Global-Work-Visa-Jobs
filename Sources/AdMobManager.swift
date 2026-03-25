@@ -1,261 +1,216 @@
 import Foundation
 import UIKit
-#if canImport(GoogleMobileAds)
 import GoogleMobileAds
-#endif
 
 class AdMobManager: NSObject, ObservableObject {
+
     static let shared = AdMobManager()
-    
+
     @Published var isBannerLoaded = false
     @Published var isInterstitialLoaded = false
     @Published var isRewardedLoaded = false
     @Published var showRewardedAdPrompt = false
-    
-    private var externalLinkClickCount = 0
-    private var shouldShowInterstitial = true
-    private var lastFeaturedJobId: String?
-    private var shouldShowRewardedForFeaturedJob = false
-    private var lastAdActivityTime: Date = Date()
-    private var adActivityTimer: Timer?
+
+    private let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
+    private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
+    private let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
+
+    private var interstitialAd: GADInterstitialAd?
+    private var rewardedAd: GADRewardedAd?
+
     private var rewardedAdTimer: Timer?
     private var lastRewardedAdTime: Date?
-    
-    private let adMobAppID = "ca-app-pub-1819215492028258~8467640467"
-    private let bannerAdUnitID = "ca-app-pub-3940256099942544/2934735716"
-    private let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411821905"
-    private let rewardedAdUnitID = "ca-app-pub-3940256099942544/1712485313"
-    private let adActivityInterval: TimeInterval = 120
-    private let rewardedAdInterval: TimeInterval = 240
-    
-    #if canImport(GoogleMobileAds)
-    private var rewardedAd: GADRewardedAd?
-    #endif
-    
+
     private override init() {
         super.init()
-        initializeAdMob()
-        startAdActivityTimer()
+        startAdMob()
+    }
+
+    // MARK: - Start AdMob
+
+    private func startAdMob() {
+
+        GADMobileAds.sharedInstance().start { status in
+            print("✅ AdMob started")
+            print(status.adapterStatusesByClassName)
+        }
+
+        loadInterstitialAd()
+        loadRewardedAd()
         startRewardedAdTimer()
     }
-    
-    private func initializeAdMob() {
-        #if canImport(GoogleMobileAds)
-        DispatchQueue.main.async {
-            GADMobileAds.sharedInstance().start { status in
-                print("✅ AdMob SDK initialized successfully")
-                print("Adapter statuses: \(status.adapterStatusesByClassName)")
-                self.loadInterstitialAd()
-                self.loadRewardedAd()
-            }
-        }
-        #else
-        print("⚠️ GoogleMobileAds framework not available")
-        #endif
-    }
-    
+
+    // MARK: - Banner
+
     func getBannerAdUnitID() -> String {
-        return bannerAdUnitID
+        bannerAdUnitID
     }
-    
-    func getInterstitialAdUnitID() -> String {
-        return interstitialAdUnitID
-    }
-    
-    func getRewardedAdUnitID() -> String {
-        return rewardedAdUnitID
-    }
-    
-    private func startAdActivityTimer() {
-        adActivityTimer?.invalidate()
-        adActivityTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            self?.checkAdActivity()
-        }
-    }
-    
-    private func startRewardedAdTimer() {
-        rewardedAdTimer?.invalidate()
-        rewardedAdTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
-            self?.checkRewardedAdTiming()
-        }
-    }
-    
-    private func checkRewardedAdTiming() {
-        guard let lastTime = lastRewardedAdTime else {
-            lastRewardedAdTime = Date()
-            return
-        }
-        
-        let timeSinceLastAd = Date().timeIntervalSince(lastTime)
-        if timeSinceLastAd >= rewardedAdInterval {
-            print("⏰ 4 minutes passed - showing rewarded ad prompt")
-            DispatchQueue.main.async {
-                self.showRewardedAdPrompt = true
-            }
-        }
-    }
-    
-    private func checkAdActivity() {
-        let timeSinceLastActivity = Date().timeIntervalSince(lastAdActivityTime)
-        if timeSinceLastActivity >= adActivityInterval {
-            print("No ad activity for 2 minutes - showing interstitial")
-            showInterstitialAd()
-            resetAdActivityTimer()
-        }
-    }
-    
-    private func resetAdActivityTimer() {
-        lastAdActivityTime = Date()
-    }
-    
+
+    // MARK: - Interstitial
+
     func loadInterstitialAd() {
-        #if canImport(GoogleMobileAds)
+
         let request = GADRequest()
-        GADInterstitialAd.load(withAdUnitID: interstitialAdUnitID, request: request) { [weak self] ad, error in
+
+        GADInterstitialAd.load(
+            withAdUnitID: interstitialAdUnitID,
+            request: request
+        ) { [weak self] ad, error in
+
             if let error = error {
-                print("❌ Failed to load interstitial ad: \(error.localizedDescription)")
+                print("❌ Interstitial failed: \(error.localizedDescription)")
                 self?.isInterstitialLoaded = false
                 return
             }
-            print("✅ Interstitial ad loaded successfully")
+
+            print("✅ Interstitial loaded")
+
+            self?.interstitialAd = ad
+            self?.interstitialAd?.fullScreenContentDelegate = self
             self?.isInterstitialLoaded = true
         }
-        #else
-        print("AdMob framework not available - interstitial ad loading disabled")
-        isInterstitialLoaded = false
-        #endif
     }
-    
+
+    func showInterstitialAd() {
+
+        guard let ad = interstitialAd else {
+            print("⚠️ Interstitial not ready")
+            loadInterstitialAd()
+            return
+        }
+
+        guard let root = getRootViewController() else {
+            print("❌ Root VC missing")
+            return
+        }
+
+        ad.present(fromRootViewController: root)
+    }
+
+    func handleExternalLinkClick() {
+        showInterstitialAd()
+    }
+
+    // MARK: - Rewarded
+
     func loadRewardedAd() {
-        #if canImport(GoogleMobileAds)
+
         let request = GADRequest()
-        GADRewardedAd.load(withAdUnitID: rewardedAdUnitID, request: request) { [weak self] ad, error in
+
+        GADRewardedAd.load(
+            withAdUnitID: rewardedAdUnitID,
+            request: request
+        ) { [weak self] ad, error in
+
             if let error = error {
-                print("❌ Failed to load rewarded ad: \(error.localizedDescription)")
+                print("❌ Rewarded failed: \(error.localizedDescription)")
                 self?.isRewardedLoaded = false
-                self?.rewardedAd = nil
                 return
             }
-            print("✅ Rewarded ad loaded successfully")
+
+            print("✅ Rewarded loaded")
+
             self?.rewardedAd = ad
             self?.rewardedAd?.fullScreenContentDelegate = self
             self?.isRewardedLoaded = true
         }
-        #else
-        print("AdMob framework not available - rewarded ad loading disabled")
-        isRewardedLoaded = false
-        #endif
     }
-    
-    func handleExternalLinkClick() {
-        resetAdActivityTimer()
-        showInterstitialAd()
-    }
-    
-    func handleFeaturedJobTap(jobId: String) {
-        resetAdActivityTimer()
-        lastFeaturedJobId = jobId
-        shouldShowRewardedForFeaturedJob = true
-    }
-    
-    func handleApplyButtonTap(jobId: String) {
-        resetAdActivityTimer()
-        if shouldShowRewardedForFeaturedJob && lastFeaturedJobId == jobId {
-            showRewardedAd()
-            shouldShowRewardedForFeaturedJob = false
-            lastFeaturedJobId = nil
-        }
-    }
-    
-    func showInterstitialForBlog() {
-        resetAdActivityTimer()
-        showInterstitialAd()
-    }
-    
-    private func showInterstitialAd() {
-        resetAdActivityTimer()
-        #if canImport(GoogleMobileAds)
-        guard isInterstitialLoaded else {
-            print("⚠️ Interstitial ad not loaded yet")
-            loadInterstitialAd()
-            return
-        }
-        
-        guard let rootViewController = getRootViewController() else {
-            print("❌ Could not get root view controller")
-            return
-        }
-        
-        print("📺 Showing interstitial ad")
-        loadInterstitialAd()
-        #else
-        print("AdMob framework not available - interstitial ad display disabled")
-        #endif
-    }
-    
+
     func showRewardedAd() {
-        #if canImport(GoogleMobileAds)
-        guard let rewardedAd = rewardedAd else {
-            print("⚠️ Rewarded ad not loaded yet")
+
+        guard let ad = rewardedAd else {
+            print("⚠️ Rewarded not ready")
             loadRewardedAd()
             return
         }
-        
-        guard let rootViewController = getRootViewController() else {
-            print("❌ Could not get root view controller")
+
+        guard let root = getRootViewController() else {
+            print("❌ Root VC missing")
             return
         }
-        
-        print("🎁 Showing rewarded ad")
-        rewardedAd.present(fromRootViewController: rootViewController) {
-            let reward = rewardedAd.adReward
-            print("🎉 User earned reward: \(reward.amount) \(reward.type)")
+
+        ad.present(fromRootViewController: root) {
+
+            let reward = ad.adReward
+            print("🎁 Reward earned: \(reward.amount) \(reward.type)")
         }
-        #else
-        print("AdMob framework not available - rewarded ad display disabled")
-        #endif
     }
-    
+
+    // MARK: - Rewarded Prompt Timer
+
+    private func startRewardedAdTimer() {
+
+        rewardedAdTimer?.invalidate()
+
+        rewardedAdTimer = Timer.scheduledTimer(
+            withTimeInterval: 240,
+            repeats: true
+        ) { [weak self] _ in
+
+            DispatchQueue.main.async {
+                print("⏰ Showing rewarded prompt")
+                self?.showRewardedAdPrompt = true
+            }
+        }
+    }
+
     func dismissRewardedPrompt() {
+
         DispatchQueue.main.async {
             self.showRewardedAdPrompt = false
             self.lastRewardedAdTime = Date()
         }
     }
-    
+
+    // MARK: - Root Controller
+
     private func getRootViewController() -> UIViewController? {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootViewController = windowScene.windows.first?.rootViewController else {
+
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+        else {
             return nil
         }
-        return rootViewController
-    }
-    
-    deinit {
-        adActivityTimer?.invalidate()
-        rewardedAdTimer?.invalidate()
+
+        return root
     }
 }
 
-#if canImport(GoogleMobileAds)
 extension AdMobManager: GADFullScreenContentDelegate {
-    func adDidRecordImpression(_ ad: GADFullScreenPresentingAd) {
-        print("📊 Rewarded ad recorded impression")
-    }
-    
-    func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
-        print("❌ Rewarded ad failed to present: \(error.localizedDescription)")
-        loadRewardedAd()
-    }
-    
+
     func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
-        print("📱 Rewarded ad will present")
+        print("📺 Ad will present")
     }
-    
+
     func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
-        print("📱 Rewarded ad dismissed")
-        dismissRewardedPrompt()
-        loadRewardedAd()
+
+        print("📉 Ad dismissed")
+
+        if ad === interstitialAd {
+            interstitialAd = nil
+            loadInterstitialAd()
+        }
+
+        if ad === rewardedAd {
+            rewardedAd = nil
+            loadRewardedAd()
+            dismissRewardedPrompt()
+        }
+    }
+
+    func ad(
+        _ ad: GADFullScreenPresentingAd,
+        didFailToPresentFullScreenContentWithError error: Error
+    ) {
+
+        print("❌ Failed to present ad: \(error.localizedDescription)")
+
+        if ad === interstitialAd {
+            loadInterstitialAd()
+        }
+
+        if ad === rewardedAd {
+            loadRewardedAd()
+        }
     }
 }
-#endif
