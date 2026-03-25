@@ -1,6 +1,7 @@
 import Foundation
+import UIKit
+import GoogleMobileAds
 import SwiftUI
-import GoogleMobileAdsSwift  // Use the SwiftUI package wrapper
 
 @MainActor
 class AdManager: ObservableObject {
