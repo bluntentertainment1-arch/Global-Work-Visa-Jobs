@@ -208,12 +208,15 @@ struct WebJobsView: View {
             Divider()
                 .background(themeManager.dividerColor.opacity(0.3))
             
+            // UK Jobs WITH interstitial ad
             MenuItemButton(
                 icon: "flag.fill",
                 title: "UK Jobs",
                 isSelected: selectedTab == 2
             ) {
-                selectedTab = 2
+                AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "UK Jobs") {
+                    selectedTab = 2
+                }
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showMenu = false
                 }
@@ -236,12 +239,15 @@ struct WebJobsView: View {
             Divider()
                 .background(themeManager.dividerColor.opacity(0.3))
             
+            // Blog WITH interstitial ad
             MenuItemButton(
                 icon: "newspaper.fill",
                 title: "Blog and Relocation Resources",
                 isSelected: selectedTab == 6
             ) {
-                selectedTab = 6
+                AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "Blog") {
+                    selectedTab = 6
+                }
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showMenu = false
                 }
