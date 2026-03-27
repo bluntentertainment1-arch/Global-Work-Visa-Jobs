@@ -1,4 +1,5 @@
 import UIKit
+import GoogleMobileAds
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
@@ -6,7 +7,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // AdMob will be initialized after ATT permission in HomeFeedView
+        // Lock to portrait
+        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+        
         return true
     }
 
@@ -19,4 +22,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {}
+    
+    // Lock orientation to portrait
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return .portrait
+    }
 }
