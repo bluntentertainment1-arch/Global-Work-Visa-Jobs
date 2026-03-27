@@ -103,7 +103,7 @@ struct WebJobsView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        // FIX: Handle rotation changes
+        // Keep rotation handler but simplified
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             webViewModel.handleRotation()
         }
@@ -482,34 +482,17 @@ class WebJobsViewModel: ObservableObject {
         webView?.goForward()
     }
     
-    // FIX: Handle rotation to reset zoom
+    // Simplified rotation handler - let website handle scaling
     func handleRotation() {
         guard let webView = webView else { return }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            // Reset zoom scale
-            webView.scrollView.zoomScale = 1.0
-            
-            // Reset content offset
-            webView.scrollView.setContentOffset(.zero, animated: false)
-            
-            // Force layout update
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            // Just trigger a layout update, website handles the rest
             webView.setNeedsLayout()
             webView.layoutIfNeeded()
             
-            // Inject JavaScript to reset viewport
-            let script = """
-                (function() {
-                    document.body.style.zoom = '1.0';
-                    document.body.style.transform = 'scale(1.0)';
-                    document.body.style.transformOrigin = '0 0';
-                    window.scrollTo(0, 0);
-                    var meta = document.querySelector('meta[name=viewport]');
-                    if (meta) {
-                        meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
-                    }
-                })();
-            """
+            // Optional: Notify website of orientation change
+            let script = "window.dispatchEvent(new Event('resize'));"
             webView.evaluateJavaScript(script, completionHandler: nil)
         }
     }
@@ -531,17 +514,11 @@ struct WebJobsContentView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
         
-        // FIX: Allow content to adjust to safe areas properly
+        // Let website handle its own scaling via viewport meta tag
         webView.scrollView.contentInsetAdjustmentBehavior = .automatic
         
-        // FIX: Ensure webview scales to fit
+        // Don't lock zoom - let website handle it
         webView.contentMode = .scaleToFill
-        
-        // FIX: Lock zoom scale to prevent rotation zoom issues
-        webView.scrollView.delegate = context.coordinator
-        webView.scrollView.minimumZoomScale = 1.0
-        webView.scrollView.maximumZoomScale = 1.0
-        webView.scrollView.bouncesZoom = false
         
         viewModel.webView = webView
         viewModel.load()
@@ -553,22 +530,14 @@ struct WebJobsContentView: UIViewRepresentable {
         DispatchQueue.main.async {
             viewModel.canGoBack = webView.canGoBack
             viewModel.canGoForward = webView.canGoForward
-            
-            // FIX: Force reset zoom scale on any update
-            webView.scrollView.zoomScale = 1.0
         }
     }
     
-    class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate {
         var parent: WebJobsContentView
         
         init(_ parent: WebJobsContentView) {
             self.parent = parent
-        }
-        
-        // FIX: Prevent zooming by returning nil
-        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-            return nil
         }
         
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -584,46 +553,17 @@ struct WebJobsContentView: UIViewRepresentable {
                 self.parent.viewModel.canGoBack = webView.canGoBack
                 self.parent.viewModel.canGoForward = webView.canGoForward
                 
-                // FIX: Inject JavaScript to prevent zoom and handle rotation
-                let preventZoomScript = """
-                    (function() {
-                        // Set viewport to prevent zoom
-                        var meta = document.querySelector('meta[name=viewport]');
-                        if (meta) {
-                            meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
-                        } else {
-                            meta = document.createElement('meta');
-                            meta.name = 'viewport';
-                            meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-                            document.getElementsByTagName('head')[0].appendChild(meta);
-                        }
-                        
-                        // Prevent double-tap zoom
-                        var lastTouchEnd = 0;
-                        document.addEventListener('touchend', function(event) {
-                            var now = (new Date()).getTime();
-                            if (now - lastTouchEnd <= 300) {
-                                event.preventDefault();
-                            }
-                            lastTouchEnd = now;
-                        }, false);
-                        
-                        // Reset any existing zoom
-                        document.body.style.zoom = '1.0';
-                        document.body.style.transform = 'scale(1.0)';
-                        document.body.style.transformOrigin = '0 0';
-                        
-                        // Handle orientation change
-                        window.addEventListener('orientationchange', function() {
-                            setTimeout(function() {
-                                window.scrollTo(0, 0);
-                                document.body.style.zoom = '1.0';
-                                document.body.style.transform = 'scale(1.0)';
-                            }, 100);
-                        });
-                    })();
+                // Minimal injection - just ensure viewport is set
+                // Website should already have this, but as fallback
+                let checkViewportScript = """
+                    if (!document.querySelector('meta[name=viewport]')) {
+                        var meta = document.createElement('meta');
+                        meta.name = 'viewport';
+                        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                        document.getElementsByTagName('head')[0].appendChild(meta);
+                    }
                 """
-                webView.evaluateJavaScript(preventZoomScript, completionHandler: nil)
+                webView.evaluateJavaScript(checkViewportScript, completionHandler: nil)
             }
         }
         
