@@ -9,7 +9,7 @@ struct WebJobsView: View {
     @Binding var selectedTab: Int
     @StateObject private var webViewModel: WebJobsViewModel
     @State private var showMenu = false
-    @State private var orientation = UIDevice.current.orientation
+    @State private var viewSize: CGSize = .zero
     
     init(urlString: String, title: String, selectedTab: Binding<Int>) {
         self.urlString = urlString
@@ -19,15 +19,15 @@ struct WebJobsView: View {
     }
     
     var body: some View {
-        ZStack {
-            themeManager.background
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                customNavigationBar
+        GeometryReader { geometry in
+            ZStack {
+                themeManager.background
+                    .ignoresSafeArea()
                 
-                // CRITICAL FIX: Use GeometryReader to force re-layout on rotation
-                GeometryReader { geometry in
+                VStack(spacing: 0) {
+                    customNavigationBar
+                    
+                    // WebView with clipped bounds
                     ZStack {
                         if webViewModel.isLoading {
                             ProgressView()
@@ -36,88 +36,101 @@ struct WebJobsView: View {
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
                         
-                        // CRITICAL FIX: Pass size to WebView
+                        // CRITICAL: Clip to bounds to prevent drawing outside
                         WebJobsContentView(
                             viewModel: webViewModel,
                             size: geometry.size
                         )
                         .opacity(webViewModel.isLoading ? 0 : 1)
+                        .clipped() // Prevents content from drawing outside
+                        .contentShape(Rectangle()) // Constrains touch area
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    VStack(spacing: 0) {
+                        Divider()
+                            .background(themeManager.borderColor.opacity(0.3))
+                        
+                        BannerAdView(adUnitID: AdMobManager.shared.getBannerAdUnitID())
+                            .frame(height: 50)
+                            .background(themeManager.secondaryBackground)
                     }
                 }
                 
-                VStack(spacing: 0) {
-                    Divider()
-                        .background(themeManager.borderColor.opacity(0.3))
-                    
-                    BannerAdView(adUnitID: AdMobManager.shared.getBannerAdUnitID())
-                        .frame(height: 50)
-                        .background(themeManager.secondaryBackground)
-                }
-            }
-            
-            if webViewModel.showError {
-                VStack(spacing: 20) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(themeManager.errorColor)
-                    
-                    Text("Failed to Load Page")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(themeManager.primaryText)
-                    
-                    Text(webViewModel.errorMessage)
-                        .font(.system(size: 15))
-                        .foregroundColor(themeManager.secondaryText)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                    
-                    Button(action: {
-                        webViewModel.reload()
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "arrow.clockwise")
-                            Text("Retry")
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(themeManager.accentColor)
-                        .cornerRadius(10)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(themeManager.background)
-            }
-            
-            if showMenu {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            showMenu = false
+                if webViewModel.showError {
+                    VStack(spacing: 20) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(themeManager.errorColor)
+                        
+                        Text("Failed to Load Page")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(themeManager.primaryText)
+                        
+                        Text(webViewModel.errorMessage)
+                            .font(.system(size: 15))
+                            .foregroundColor(themeManager.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                        
+                        Button(action: {
+                            webViewModel.reload()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.clockwise")
+                                Text("Retry")
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(themeManager.accentColor)
+                            .cornerRadius(10)
                         }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(themeManager.background)
+                }
                 
-                VStack(spacing: 0) {
-                    HStack {
+                if showMenu {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                showMenu = false
+                            }
+                        }
+                    
+                    VStack(spacing: 0) {
+                        HStack {
+                            Spacer()
+                            menuDropdown
+                                .padding(.top, 60)
+                                .padding(.trailing, 16)
+                        }
                         Spacer()
-                        menuDropdown
-                            .padding(.top, 60)
-                            .padding(.trailing, 16)
                     }
-                    Spacer()
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+            // Store size for comparison
+            .onAppear {
+                viewSize = geometry.size
+            }
+            // Handle rotation without reloading
+            .onChange(of: geometry.size) { newSize in
+                let oldSize = viewSize
+                let widthDiff = abs(newSize.width - oldSize.width)
+                let heightDiff = abs(newSize.height - oldSize.height)
+                
+                // Only handle if significant change (rotation)
+                if widthDiff > 50 || heightDiff > 50 {
+                    viewSize = newSize
+                    // Notify WebView of size change WITHOUT reloading
+                    webViewModel.handleSizeChange(newSize)
+                }
             }
         }
-        // CRITICAL FIX: Force rebuild on orientation change
-        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-            orientation = UIDevice.current.orientation
-            webViewModel.handleRotation()
-        }
-        // CRITICAL FIX: Force rebuild when size changes
-        .id(orientation.isPortrait ? "portrait" : "landscape")
     }
     
     private var customNavigationBar: some View {
@@ -493,38 +506,28 @@ class WebJobsViewModel: ObservableObject {
         webView?.goForward()
     }
     
-    // CRITICAL FIX: Handle rotation with delay to let iOS finish animation
-    func handleRotation() {
+    // CRITICAL: Handle size change WITHOUT reloading
+    func handleSizeChange(_ newSize: CGSize) {
         guard let webView = webView else { return }
         
-        // Delay to let rotation animation complete
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Force frame update
-            let frame = webView.frame
-            webView.frame = CGRect(x: 0, y: 0, width: 0, height: 0)
-            webView.frame = frame
-            
-            // Reset zoom
-            webView.scrollView.zoomScale = 1.0
-            
-            // Force relayout
-            webView.setNeedsLayout()
-            webView.layoutIfNeeded()
-            
-            // Notify website
-            let script = """
-                window.dispatchEvent(new Event('resize'));
-                // Force recalculation
-                document.body.style.display = 'none';
-                document.body.offsetHeight;
-                document.body.style.display = '';
-            """
-            webView.evaluateJavaScript(script, completionHandler: nil)
-        }
+        // Update frame without recreating WebView
+        webView.frame = CGRect(origin: .zero, size: newSize)
+        
+        // Reset zoom and content offset
+        webView.scrollView.zoomScale = 1.0
+        webView.scrollView.contentOffset = .zero
+        
+        // Force layout
+        webView.setNeedsLayout()
+        webView.layoutIfNeeded()
+        
+        // Notify website of resize (triggers CSS media queries)
+        let script = "window.dispatchEvent(new Event('resize'));"
+        webView.evaluateJavaScript(script, completionHandler: nil)
     }
 }
 
-// CRITICAL FIX: Add size parameter to force re-creation on size change
+// CRITICAL: Stable WebView that doesn't reload on size change
 struct WebJobsContentView: UIViewRepresentable {
     @ObservedObject var viewModel: WebJobsViewModel
     let size: CGSize
@@ -538,44 +541,36 @@ struct WebJobsContentView: UIViewRepresentable {
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
         
-        // CRITICAL: Create with actual frame size
+        // CRITICAL: Create with initial size
         let webView = WKWebView(frame: CGRect(origin: .zero, size: size), configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
         
-        // Let website handle scaling
+        // CRITICAL: Clip to bounds to prevent drawing outside
+        webView.clipsToBounds = true
+        
+        // Let website handle scaling via viewport meta tag
         webView.scrollView.contentInsetAdjustmentBehavior = .automatic
         webView.contentMode = .scaleToFill
         
-        // CRITICAL: Disable zoom to prevent rotation zoom bug
+        // Disable zoom to prevent rotation zoom bug
         webView.scrollView.delegate = context.coordinator
         webView.scrollView.minimumZoomScale = 1.0
         webView.scrollView.maximumZoomScale = 1.0
         webView.scrollView.bouncesZoom = false
         
+        // Store reference and load
         viewModel.webView = webView
         viewModel.load()
         
         return webView
     }
     
-    // CRITICAL FIX: Recreate WebView when size changes significantly
+    // CRITICAL: Update frame without recreating
     func updateUIView(_ webView: WKWebView, context: Context) {
-        // Check if size changed significantly (rotation)
-        let currentSize = webView.frame.size
-        let sizeChanged = abs(currentSize.width - size.width) > 50 || abs(currentSize.height - size.height) > 50
-        
-        if sizeChanged {
-            // Force frame update
+        // Only update frame, don't recreate
+        if webView.frame.size != size {
             webView.frame = CGRect(origin: .zero, size: size)
-            
-            // Reset zoom
-            webView.scrollView.zoomScale = 1.0
-            webView.scrollView.contentOffset = .zero
-            
-            // Force relayout
-            webView.setNeedsLayout()
-            webView.layoutIfNeeded()
         }
         
         DispatchQueue.main.async {
