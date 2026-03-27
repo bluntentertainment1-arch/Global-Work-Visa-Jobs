@@ -5,7 +5,7 @@ import GoogleMobileAds
 struct HomeFeedView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @Binding var showLanding: Bool
-    @State private var showATTAlert = false
+    var onComplete: () -> Void  // Add this
     @State private var attStatus: ATTrackingManager.AuthorizationStatus = .notDetermined
     
     var body: some View {
@@ -96,10 +96,6 @@ struct HomeFeedView: View {
             }
             .padding(.top, 20)
         }
-        .onAppear {
-            // Check current status
-            attStatus = ATTrackingManager.trackingAuthorizationStatus
-        }
     }
     
     private func requestTrackingAndProceed() {
@@ -111,9 +107,10 @@ struct HomeFeedView: View {
                 // Initialize AdMob after permission response
                 self.initializeAdMob()
                 
-                // Dismiss landing screen with animation
+                // Dismiss landing and continue
                 withAnimation(.easeInOut(duration: 0.4)) {
                     showLanding = false
+                    onComplete()  // Call completion handler
                 }
             }
         }
