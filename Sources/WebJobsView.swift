@@ -1,6 +1,7 @@
 import SwiftUI
 import WebKit
 import StoreKit
+import Combine
 
 struct WebJobsView: View {
     @EnvironmentObject var themeManager: ThemeManager
@@ -9,7 +10,6 @@ struct WebJobsView: View {
     @Binding var selectedTab: Int
     @StateObject private var webViewModel: WebJobsViewModel
     @State private var showMenu = false
-    @State private var viewSize: CGSize = .zero
     
     init(urlString: String, title: String, selectedTab: Binding<Int>) {
         self.urlString = urlString
@@ -19,116 +19,81 @@ struct WebJobsView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                themeManager.background
-                    .ignoresSafeArea()
+        ZStack {
+            themeManager.background
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                customNavigationBar
+                
+                // Use UIViewControllerRepresentable for stable rotation handling
+                WebViewContainer(viewModel: webViewModel)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 VStack(spacing: 0) {
-                    customNavigationBar
+                    Divider()
+                        .background(themeManager.borderColor.opacity(0.3))
                     
-                    // WebView with clipped bounds
-                    ZStack {
-                        if webViewModel.isLoading {
-                            ProgressView()
-                                .scaleEffect(1.2)
-                                .tint(themeManager.accentColor)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    BannerAdView(adUnitID: AdMobManager.shared.getBannerAdUnitID())
+                        .frame(height: 50)
+                        .background(themeManager.secondaryBackground)
+                }
+            }
+            
+            if webViewModel.showError {
+                VStack(spacing: 20) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(themeManager.errorColor)
+                    
+                    Text("Failed to Load Page")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(themeManager.primaryText)
+                    
+                    Text(webViewModel.errorMessage)
+                        .font(.system(size: 15))
+                        .foregroundColor(themeManager.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                    
+                    Button(action: {
+                        webViewModel.reload()
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.clockwise")
+                            Text("Retry")
+                                .fontWeight(.semibold)
                         }
-                        
-                        // CRITICAL: Clip to bounds to prevent drawing outside
-                        WebJobsContentView(
-                            viewModel: webViewModel,
-                            size: geometry.size
-                        )
-                        .opacity(webViewModel.isLoading ? 0 : 1)
-                        .clipped() // Prevents content from drawing outside
-                        .contentShape(Rectangle()) // Constrains touch area
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    
-                    VStack(spacing: 0) {
-                        Divider()
-                            .background(themeManager.borderColor.opacity(0.3))
-                        
-                        BannerAdView(adUnitID: AdMobManager.shared.getBannerAdUnitID())
-                            .frame(height: 50)
-                            .background(themeManager.secondaryBackground)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(themeManager.accentColor)
+                        .cornerRadius(10)
                     }
                 }
-                
-                if webViewModel.showError {
-                    VStack(spacing: 20) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(themeManager.errorColor)
-                        
-                        Text("Failed to Load Page")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(themeManager.primaryText)
-                        
-                        Text(webViewModel.errorMessage)
-                            .font(.system(size: 15))
-                            .foregroundColor(themeManager.secondaryText)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                        
-                        Button(action: {
-                            webViewModel.reload()
-                        }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "arrow.clockwise")
-                                Text("Retry")
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(themeManager.accentColor)
-                            .cornerRadius(10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(themeManager.background)
+            }
+            
+            if showMenu {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            showMenu = false
                         }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(themeManager.background)
-                }
                 
-                if showMenu {
-                    Color.black.opacity(0.3)
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                showMenu = false
-                            }
-                        }
-                    
-                    VStack(spacing: 0) {
-                        HStack {
-                            Spacer()
-                            menuDropdown
-                                .padding(.top, 60)
-                                .padding(.trailing, 16)
-                        }
+                VStack(spacing: 0) {
+                    HStack {
                         Spacer()
+                        menuDropdown
+                            .padding(.top, 60)
+                            .padding(.trailing, 16)
                     }
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    Spacer()
                 }
-            }
-            // Store size for comparison
-            .onAppear {
-                viewSize = geometry.size
-            }
-            // Handle rotation without reloading
-            .onChange(of: geometry.size) { newSize in
-                let oldSize = viewSize
-                let widthDiff = abs(newSize.width - oldSize.width)
-                let heightDiff = abs(newSize.height - oldSize.height)
-                
-                // Only handle if significant change (rotation)
-                if widthDiff > 50 || heightDiff > 50 {
-                    viewSize = newSize
-                    // Notify WebView of size change WITHOUT reloading
-                    webViewModel.handleSizeChange(newSize)
-                }
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
     }
@@ -190,194 +155,93 @@ struct WebJobsView: View {
     
     private var menuDropdown: some View {
         VStack(spacing: 0) {
-            // MARK: - NATIVE FEATURES (Top Section)
             SectionHeader(title: "App Features")
             
-            MenuItemButton(
-                icon: "gearshape.fill",
-                title: "Settings",
-                isSelected: selectedTab == 4
-            ) {
-                selectedTab = 4
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "gearshape.fill", title: "Settings", isSelected: selectedTab == 4) {
+                selectedTab = 4; showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "star.fill",
-                title: "Rate App",
-                isSelected: false
-            ) {
-                rateApp()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "star.fill", title: "Rate App", isSelected: false) {
+                rateApp(); showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "square.and.arrow.up.fill",
-                title: "Share App",
-                isSelected: false
-            ) {
-                shareApp()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "square.and.arrow.up.fill", title: "Share App", isSelected: false) {
+                shareApp(); showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "envelope.fill",
-                title: "Contact Us",
-                isSelected: selectedTab == 9
-            ) {
-                selectedTab = 9
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "envelope.fill", title: "Contact Us", isSelected: selectedTab == 9) {
+                selectedTab = 9; showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "info.circle.fill",
-                title: "About Us",
-                isSelected: selectedTab == 7
-            ) {
-                selectedTab = 7
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "info.circle.fill", title: "About Us", isSelected: selectedTab == 7) {
+                selectedTab = 7; showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "lock.shield.fill",
-                title: "Privacy Policy",
-                isSelected: selectedTab == 8
-            ) {
-                selectedTab = 8
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "lock.shield.fill", title: "Privacy Policy", isSelected: selectedTab == 8) {
+                selectedTab = 8; showMenu = false
             }
             
-            // MARK: - WEB CONTENT (Bottom Section)
             SectionHeader(title: "Browse Jobs")
             
-            MenuItemButton(
-                icon: "briefcase.fill",
-                title: "All Jobs",
-                isSelected: selectedTab == 0
-            ) {
+            MenuItemButton(icon: "briefcase.fill", title: "All Jobs", isSelected: selectedTab == 0) {
                 if selectedTab == 0 {
                     NotificationCenter.default.post(name: NSNotification.Name("RefreshMainScreen"), object: nil)
                 } else {
                     selectedTab = 0
                 }
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+                showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "bookmark.fill",
-                title: "Saved Jobs",
-                isSelected: selectedTab == 10
-            ) {
-                selectedTab = 10
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "bookmark.fill", title: "Saved Jobs", isSelected: selectedTab == 10) {
+                selectedTab = 10; showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "flag.fill",
-                title: "Canada Jobs",
-                isSelected: selectedTab == 1
-            ) {
-                selectedTab = 1
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "flag.fill", title: "Canada Jobs", isSelected: selectedTab == 1) {
+                selectedTab = 1; showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "flag.fill",
-                title: "UK Jobs",
-                isSelected: selectedTab == 2
-            ) {
+            MenuItemButton(icon: "flag.fill", title: "UK Jobs", isSelected: selectedTab == 2) {
                 AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "UK Jobs") {
                     selectedTab = 2
                 }
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+                showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "flag.fill",
-                title: "Germany Jobs",
-                isSelected: selectedTab == 3
-            ) {
-                selectedTab = 3
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "flag.fill", title: "Germany Jobs", isSelected: selectedTab == 3) {
+                selectedTab = 3; showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "newspaper.fill",
-                title: "Blog & Resources",
-                isSelected: selectedTab == 6
-            ) {
+            MenuItemButton(icon: "newspaper.fill", title: "Blog & Resources", isSelected: selectedTab == 6) {
                 AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "Blog") {
                     selectedTab = 6
                 }
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+                showMenu = false
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            Divider().background(themeManager.dividerColor.opacity(0.3))
             
-            MenuItemButton(
-                icon: "doc.text.fill",
-                title: "Terms & Conditions",
-                isSelected: selectedTab == 5
-            ) {
-                selectedTab = 5
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
+            MenuItemButton(icon: "doc.text.fill", title: "Terms & Conditions", isSelected: selectedTab == 5) {
+                selectedTab = 5; showMenu = false
             }
         }
         .frame(width: 240)
@@ -463,6 +327,152 @@ struct SectionHeader: View {
     }
 }
 
+// MARK: - Stable WebView Container using UIViewController
+struct WebViewContainer: UIViewControllerRepresentable {
+    @ObservedObject var viewModel: WebJobsViewModel
+    
+    func makeUIViewController(context: Context) -> WebViewController {
+        let controller = WebViewController()
+        controller.viewModel = viewModel
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: WebViewController, context: Context) {
+        // No updates needed - controller handles rotation itself
+    }
+}
+
+// MARK: - UIViewController that handles rotation properly
+class WebViewController: UIViewController {
+    var viewModel: WebJobsViewModel?
+    private var webView: WKWebView?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupWebView()
+    }
+    
+    private func setupWebView() {
+        let configuration = WKWebViewConfiguration()
+        configuration.allowsInlineMediaPlayback = true
+        configuration.mediaTypesRequiringUserActionForPlayback = []
+        
+        webView = WKWebView(frame: view.bounds, configuration: configuration)
+        webView?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        webView?.navigationDelegate = self
+        webView?.allowsBackForwardNavigationGestures = true
+        
+        // Clip to bounds
+        webView?.clipsToBounds = true
+        
+        // Use safe area
+        webView?.scrollView.contentInsetAdjustmentBehavior = .automatic
+        
+        // Disable zoom
+        webView?.scrollView.delegate = self
+        webView?.scrollView.minimumZoomScale = 1.0
+        webView?.scrollView.maximumZoomScale = 1.0
+        webView?.scrollView.bouncesZoom = false
+        
+        if let webView = webView {
+            view.addSubview(webView)
+            viewModel?.webView = webView
+            viewModel?.load()
+        }
+    }
+    
+    // CRITICAL: Handle rotation at UIKit level
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with coordinator)
+        
+        // Animate the transition
+        coordinator.animate(alongsideTransition: { _ in
+            self.webView?.frame = CGRect(origin: .zero, size: size)
+        }, completion: { _ in
+            // Reset zoom after rotation completes
+            self.webView?.scrollView.zoomScale = 1.0
+            self.webView?.scrollView.contentOffset = .zero
+            
+            // Notify website
+            self.webView?.evaluateJavaScript("window.dispatchEvent(new Event('resize'));", completionHandler: nil)
+        })
+    }
+}
+
+extension WebViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        DispatchQueue.main.async {
+            self.viewModel?.isLoading = true
+            self.viewModel?.showError = false
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        DispatchQueue.main.async {
+            self.viewModel?.isLoading = false
+            self.viewModel?.canGoBack = webView.canGoBack
+            self.viewModel?.canGoForward = webView.canGoForward
+            
+            // Inject viewport if needed
+            let script = """
+                var meta = document.querySelector('meta[name=viewport]');
+                if (!meta) {
+                    meta = document.createElement('meta');
+                    meta.name = 'viewport';
+                    meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+                    document.getElementsByTagName('head')[0].appendChild(meta);
+                }
+            """
+            webView.evaluateJavaScript(script, completionHandler: nil)
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        DispatchQueue.main.async {
+            self.viewModel?.isLoading = false
+            self.viewModel?.showError = true
+            self.viewModel?.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        DispatchQueue.main.async {
+            self.viewModel?.isLoading = false
+            self.viewModel?.showError = true
+            self.viewModel?.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        guard let url = navigationAction.request.url else {
+            decisionHandler(.allow)
+            return
+        }
+        
+        if url.scheme == "tel" || url.scheme == "mailto" {
+            AdMobManager.shared.openExternalURL(url)
+            decisionHandler(.cancel)
+            return
+        }
+        
+        let hostString = url.host ?? ""
+        if !hostString.contains("mobileworkvisajobs.pages.dev") && navigationAction.navigationType == .linkActivated {
+            AdMobManager.shared.openExternalURL(url)
+            decisionHandler(.cancel)
+            return
+        }
+        
+        decisionHandler(.allow)
+    }
+}
+
+extension WebViewController: UIScrollViewDelegate {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return nil
+    }
+}
+
+// MARK: - ViewModel
 class WebJobsViewModel: ObservableObject {
     @Published var isLoading = true
     @Published var canGoBack = false
@@ -504,160 +514,5 @@ class WebJobsViewModel: ObservableObject {
     
     func goForward() {
         webView?.goForward()
-    }
-    
-    // CRITICAL: Handle size change WITHOUT reloading
-    func handleSizeChange(_ newSize: CGSize) {
-        guard let webView = webView else { return }
-        
-        // Update frame without recreating WebView
-        webView.frame = CGRect(origin: .zero, size: newSize)
-        
-        // Reset zoom and content offset
-        webView.scrollView.zoomScale = 1.0
-        webView.scrollView.contentOffset = .zero
-        
-        // Force layout
-        webView.setNeedsLayout()
-        webView.layoutIfNeeded()
-        
-        // Notify website of resize (triggers CSS media queries)
-        let script = "window.dispatchEvent(new Event('resize'));"
-        webView.evaluateJavaScript(script, completionHandler: nil)
-    }
-}
-
-// CRITICAL: Stable WebView that doesn't reload on size change
-struct WebJobsContentView: UIViewRepresentable {
-    @ObservedObject var viewModel: WebJobsViewModel
-    let size: CGSize
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    func makeUIView(context: Context) -> WKWebView {
-        let configuration = WKWebViewConfiguration()
-        configuration.allowsInlineMediaPlayback = true
-        configuration.mediaTypesRequiringUserActionForPlayback = []
-        
-        // CRITICAL: Create with initial size
-        let webView = WKWebView(frame: CGRect(origin: .zero, size: size), configuration: configuration)
-        webView.navigationDelegate = context.coordinator
-        webView.allowsBackForwardNavigationGestures = true
-        
-        // CRITICAL: Clip to bounds to prevent drawing outside
-        webView.clipsToBounds = true
-        
-        // Let website handle scaling via viewport meta tag
-        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
-        webView.contentMode = .scaleToFill
-        
-        // Disable zoom to prevent rotation zoom bug
-        webView.scrollView.delegate = context.coordinator
-        webView.scrollView.minimumZoomScale = 1.0
-        webView.scrollView.maximumZoomScale = 1.0
-        webView.scrollView.bouncesZoom = false
-        
-        // Store reference and load
-        viewModel.webView = webView
-        viewModel.load()
-        
-        return webView
-    }
-    
-    // CRITICAL: Update frame without recreating
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        // Only update frame, don't recreate
-        if webView.frame.size != size {
-            webView.frame = CGRect(origin: .zero, size: size)
-        }
-        
-        DispatchQueue.main.async {
-            viewModel.canGoBack = webView.canGoBack
-            viewModel.canGoForward = webView.canGoForward
-        }
-    }
-    
-    class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
-        var parent: WebJobsContentView
-        
-        init(_ parent: WebJobsContentView) {
-            self.parent = parent
-        }
-        
-        // Prevent zooming
-        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-            return nil
-        }
-        
-        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-            DispatchQueue.main.async {
-                self.parent.viewModel.isLoading = true
-                self.parent.viewModel.showError = false
-            }
-        }
-        
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            DispatchQueue.main.async {
-                self.parent.viewModel.isLoading = false
-                self.parent.viewModel.canGoBack = webView.canGoBack
-                self.parent.viewModel.canGoForward = webView.canGoForward
-                
-                // Ensure viewport is set
-                let viewportScript = """
-                    var meta = document.querySelector('meta[name=viewport]');
-                    if (!meta) {
-                        meta = document.createElement('meta');
-                        meta.name = 'viewport';
-                        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-                        document.getElementsByTagName('head')[0].appendChild(meta);
-                    }
-                """
-                webView.evaluateJavaScript(viewportScript, completionHandler: nil)
-            }
-        }
-        
-        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-            DispatchQueue.main.async {
-                self.parent.viewModel.isLoading = false
-                self.parent.viewModel.showError = true
-                self.parent.viewModel.errorMessage = error.localizedDescription
-            }
-        }
-        
-        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-            DispatchQueue.main.async {
-                self.parent.viewModel.isLoading = false
-                self.parent.viewModel.showError = true
-                self.parent.viewModel.errorMessage = error.localizedDescription
-            }
-        }
-        
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            guard let url = navigationAction.request.url else {
-                decisionHandler(.allow)
-                return
-            }
-            
-            if url.scheme == "tel" || url.scheme == "mailto" {
-                AdMobManager.shared.openExternalURL(url)
-                decisionHandler(.cancel)
-                return
-            }
-            
-            let hostString = url.host ?? ""
-            if !hostString.contains("mobileworkvisajobs.pages.dev") && navigationAction.navigationType == .linkActivated {
-                AdMobManager.shared.openExternalURL(url)
-                decisionHandler(.cancel)
-                return
-            }
-            
-            decisionHandler(.allow)
-        }
-        
-        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-            decisionHandler(.allow)
-        }
     }
 }
