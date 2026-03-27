@@ -1,7 +1,6 @@
 import SwiftUI
 import WebKit
 import StoreKit
-import Combine
 
 struct WebJobsView: View {
     @EnvironmentObject var themeManager: ThemeManager
@@ -26,8 +25,7 @@ struct WebJobsView: View {
             VStack(spacing: 0) {
                 customNavigationBar
                 
-                // Use UIViewControllerRepresentable for stable rotation handling
-                WebViewContainer(viewModel: webViewModel)
+                WebJobsContentView(viewModel: webViewModel)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
                 VStack(spacing: 0) {
@@ -327,152 +325,6 @@ struct SectionHeader: View {
     }
 }
 
-// MARK: - Stable WebView Container using UIViewController
-struct WebViewContainer: UIViewControllerRepresentable {
-    @ObservedObject var viewModel: WebJobsViewModel
-    
-    func makeUIViewController(context: Context) -> WebViewController {
-        let controller = WebViewController()
-        controller.viewModel = viewModel
-        return controller
-    }
-    
-    func updateUIViewController(_ uiViewController: WebViewController, context: Context) {
-        // No updates needed - controller handles rotation itself
-    }
-}
-
-// MARK: - UIViewController that handles rotation properly
-class WebViewController: UIViewController {
-    var viewModel: WebJobsViewModel?
-    private var webView: WKWebView?
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupWebView()
-    }
-    
-    private func setupWebView() {
-        let configuration = WKWebViewConfiguration()
-        configuration.allowsInlineMediaPlayback = true
-        configuration.mediaTypesRequiringUserActionForPlayback = []
-        
-        webView = WKWebView(frame: view.bounds, configuration: configuration)
-        webView?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        webView?.navigationDelegate = self
-        webView?.allowsBackForwardNavigationGestures = true
-        
-        // Clip to bounds
-        webView?.clipsToBounds = true
-        
-        // Use safe area
-        webView?.scrollView.contentInsetAdjustmentBehavior = .automatic
-        
-        // Disable zoom
-        webView?.scrollView.delegate = self
-        webView?.scrollView.minimumZoomScale = 1.0
-        webView?.scrollView.maximumZoomScale = 1.0
-        webView?.scrollView.bouncesZoom = false
-        
-        if let webView = webView {
-            view.addSubview(webView)
-            viewModel?.webView = webView
-            viewModel?.load()
-        }
-    }
-    
-    // CRITICAL: Handle rotation at UIKit level
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
-        
-        // Animate the transition
-        coordinator.animate(alongsideTransition: { _ in
-            self.webView?.frame = CGRect(origin: .zero, size: size)
-        }, completion: { _ in
-            // Reset zoom after rotation completes
-            self.webView?.scrollView.zoomScale = 1.0
-            self.webView?.scrollView.contentOffset = .zero
-            
-            // Notify website
-            self.webView?.evaluateJavaScript("window.dispatchEvent(new Event('resize'));", completionHandler: nil)
-        })
-    }
-}
-
-extension WebViewController: WKNavigationDelegate {
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        DispatchQueue.main.async {
-            self.viewModel?.isLoading = true
-            self.viewModel?.showError = false
-        }
-    }
-    
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        DispatchQueue.main.async {
-            self.viewModel?.isLoading = false
-            self.viewModel?.canGoBack = webView.canGoBack
-            self.viewModel?.canGoForward = webView.canGoForward
-            
-            // Inject viewport if needed
-            let script = """
-                var meta = document.querySelector('meta[name=viewport]');
-                if (!meta) {
-                    meta = document.createElement('meta');
-                    meta.name = 'viewport';
-                    meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-                    document.getElementsByTagName('head')[0].appendChild(meta);
-                }
-            """
-            webView.evaluateJavaScript(script, completionHandler: nil)
-        }
-    }
-    
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        DispatchQueue.main.async {
-            self.viewModel?.isLoading = false
-            self.viewModel?.showError = true
-            self.viewModel?.errorMessage = error.localizedDescription
-        }
-    }
-    
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        DispatchQueue.main.async {
-            self.viewModel?.isLoading = false
-            self.viewModel?.showError = true
-            self.viewModel?.errorMessage = error.localizedDescription
-        }
-    }
-    
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        guard let url = navigationAction.request.url else {
-            decisionHandler(.allow)
-            return
-        }
-        
-        if url.scheme == "tel" || url.scheme == "mailto" {
-            AdMobManager.shared.openExternalURL(url)
-            decisionHandler(.cancel)
-            return
-        }
-        
-        let hostString = url.host ?? ""
-        if !hostString.contains("mobileworkvisajobs.pages.dev") && navigationAction.navigationType == .linkActivated {
-            AdMobManager.shared.openExternalURL(url)
-            decisionHandler(.cancel)
-            return
-        }
-        
-        decisionHandler(.allow)
-    }
-}
-
-extension WebViewController: UIScrollViewDelegate {
-    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return nil
-    }
-}
-
-// MARK: - ViewModel
 class WebJobsViewModel: ObservableObject {
     @Published var isLoading = true
     @Published var canGoBack = false
@@ -514,5 +366,102 @@ class WebJobsViewModel: ObservableObject {
     
     func goForward() {
         webView?.goForward()
+    }
+}
+
+struct WebJobsContentView: UIViewRepresentable {
+    @ObservedObject var viewModel: WebJobsViewModel
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    func makeUIView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.allowsInlineMediaPlayback = true
+        configuration.mediaTypesRequiringUserActionForPlayback = []
+        
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.navigationDelegate = context.coordinator
+        webView.allowsBackForwardNavigationGestures = true
+        
+        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
+        
+        viewModel.webView = webView
+        viewModel.load()
+        
+        return webView
+    }
+    
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        DispatchQueue.main.async {
+            viewModel.canGoBack = webView.canGoBack
+            viewModel.canGoForward = webView.canGoForward
+        }
+    }
+    
+    class Coordinator: NSObject, WKNavigationDelegate {
+        var parent: WebJobsContentView
+        
+        init(_ parent: WebJobsContentView) {
+            self.parent = parent
+        }
+        
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            DispatchQueue.main.async {
+                self.parent.viewModel.isLoading = true
+                self.parent.viewModel.showError = false
+            }
+        }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            DispatchQueue.main.async {
+                self.parent.viewModel.isLoading = false
+                self.parent.viewModel.canGoBack = webView.canGoBack
+                self.parent.viewModel.canGoForward = webView.canGoForward
+            }
+        }
+        
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            DispatchQueue.main.async {
+                self.parent.viewModel.isLoading = false
+                self.parent.viewModel.showError = true
+                self.parent.viewModel.errorMessage = error.localizedDescription
+            }
+        }
+        
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            DispatchQueue.main.async {
+                self.parent.viewModel.isLoading = false
+                self.parent.viewModel.showError = true
+                self.parent.viewModel.errorMessage = error.localizedDescription
+            }
+        }
+        
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            guard let url = navigationAction.request.url else {
+                decisionHandler(.allow)
+                return
+            }
+            
+            if url.scheme == "tel" || url.scheme == "mailto" {
+                AdMobManager.shared.openExternalURL(url)
+                decisionHandler(.cancel)
+                return
+            }
+            
+            let hostString = url.host ?? ""
+            if !hostString.contains("mobileworkvisajobs.pages.dev") && navigationAction.navigationType == .linkActivated {
+                AdMobManager.shared.openExternalURL(url)
+                decisionHandler(.cancel)
+                return
+            }
+            
+            decisionHandler(.allow)
+        }
+        
+        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            decisionHandler(.allow)
+        }
     }
 }
