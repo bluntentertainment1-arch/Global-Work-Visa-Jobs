@@ -162,16 +162,15 @@ struct WebJobsView: View {
     
     private var menuDropdown: some View {
         VStack(spacing: 0) {
+            // MARK: - NATIVE FEATURES (Top Section)
+            SectionHeader(title: "App Features")
+            
             MenuItemButton(
-                icon: "briefcase.fill",
-                title: "Jobs",
-                isSelected: selectedTab == 0
+                icon: "gearshape.fill",
+                title: "Settings",
+                isSelected: selectedTab == 4
             ) {
-                if selectedTab == 0 {
-                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMainScreen"), object: nil)
-                } else {
-                    selectedTab = 0
-                }
+                selectedTab = 4
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showMenu = false
                 }
@@ -181,11 +180,11 @@ struct WebJobsView: View {
                 .background(themeManager.dividerColor.opacity(0.3))
             
             MenuItemButton(
-                icon: "bookmark.fill",
-                title: "Saved Jobs",
-                isSelected: selectedTab == 10
+                icon: "star.fill",
+                title: "Rate App",
+                isSelected: false
             ) {
-                selectedTab = 10
+                rateApp()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showMenu = false
                 }
@@ -195,59 +194,11 @@ struct WebJobsView: View {
                 .background(themeManager.dividerColor.opacity(0.3))
             
             MenuItemButton(
-                icon: "flag.fill",
-                title: "Canada Jobs",
-                isSelected: selectedTab == 1
+                icon: "square.and.arrow.up.fill",
+                title: "Share App",
+                isSelected: false
             ) {
-                selectedTab = 1
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
-            }
-            
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
-            
-            // UK Jobs WITH interstitial ad
-            MenuItemButton(
-                icon: "flag.fill",
-                title: "UK Jobs",
-                isSelected: selectedTab == 2
-            ) {
-                AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "UK Jobs") {
-                    selectedTab = 2
-                }
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
-            }
-            
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
-            
-            MenuItemButton(
-                icon: "flag.fill",
-                title: "Germany Jobs",
-                isSelected: selectedTab == 3
-            ) {
-                selectedTab = 3
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
-            }
-            
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
-            
-            // Blog WITH interstitial ad
-            MenuItemButton(
-                icon: "newspaper.fill",
-                title: "Blog and Relocation Resources",
-                isSelected: selectedTab == 6
-            ) {
-                AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "Blog") {
-                    selectedTab = 6
-                }
+                shareApp()
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showMenu = false
                 }
@@ -295,15 +246,19 @@ struct WebJobsView: View {
                 }
             }
             
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
+            // MARK: - WEB CONTENT (Bottom Section)
+            SectionHeader(title: "Browse Jobs")
             
             MenuItemButton(
-                icon: "square.and.arrow.up.fill",
-                title: "Share App",
-                isSelected: false
+                icon: "briefcase.fill",
+                title: "All Jobs",
+                isSelected: selectedTab == 0
             ) {
-                shareApp()
+                if selectedTab == 0 {
+                    NotificationCenter.default.post(name: NSNotification.Name("RefreshMainScreen"), object: nil)
+                } else {
+                    selectedTab = 0
+                }
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showMenu = false
                 }
@@ -313,11 +268,71 @@ struct WebJobsView: View {
                 .background(themeManager.dividerColor.opacity(0.3))
             
             MenuItemButton(
-                icon: "star.fill",
-                title: "Rate App",
-                isSelected: false
+                icon: "bookmark.fill",
+                title: "Saved Jobs",
+                isSelected: selectedTab == 10
             ) {
-                rateApp()
+                selectedTab = 10
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showMenu = false
+                }
+            }
+            
+            Divider()
+                .background(themeManager.dividerColor.opacity(0.3))
+            
+            MenuItemButton(
+                icon: "flag.fill",
+                title: "Canada Jobs",
+                isSelected: selectedTab == 1
+            ) {
+                selectedTab = 1
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showMenu = false
+                }
+            }
+            
+            Divider()
+                .background(themeManager.dividerColor.opacity(0.3))
+            
+            MenuItemButton(
+                icon: "flag.fill",
+                title: "UK Jobs",
+                isSelected: selectedTab == 2
+            ) {
+                AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "UK Jobs") {
+                    selectedTab = 2
+                }
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showMenu = false
+                }
+            }
+            
+            Divider()
+                .background(themeManager.dividerColor.opacity(0.3))
+            
+            MenuItemButton(
+                icon: "flag.fill",
+                title: "Germany Jobs",
+                isSelected: selectedTab == 3
+            ) {
+                selectedTab = 3
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    showMenu = false
+                }
+            }
+            
+            Divider()
+                .background(themeManager.dividerColor.opacity(0.3))
+            
+            MenuItemButton(
+                icon: "newspaper.fill",
+                title: "Blog & Resources",
+                isSelected: selectedTab == 6
+            ) {
+                AdMobManager.shared.showInterstitialForMenuItem(menuTitle: "Blog") {
+                    selectedTab = 6
+                }
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                     showMenu = false
                 }
@@ -336,22 +351,8 @@ struct WebJobsView: View {
                     showMenu = false
                 }
             }
-            
-            Divider()
-                .background(themeManager.dividerColor.opacity(0.3))
-            
-            MenuItemButton(
-                icon: "gearshape.fill",
-                title: "Settings",
-                isSelected: selectedTab == 4
-            ) {
-                selectedTab = 4
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    showMenu = false
-                }
-            }
         }
-        .frame(width: 220)
+        .frame(width: 240)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(themeManager.cardBackground)
@@ -413,6 +414,24 @@ struct MenuItemButton: View {
                     .fill(isSelected ? themeManager.accentColor.opacity(0.1) : Color.clear)
             )
         }
+    }
+}
+
+struct SectionHeader: View {
+    @EnvironmentObject var themeManager: ThemeManager
+    let title: String
+    
+    var body: some View {
+        HStack {
+            Text(title.uppercased())
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(themeManager.secondaryText.opacity(0.7))
+                .tracking(1.2)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(themeManager.secondaryBackground.opacity(0.5))
     }
 }
 
@@ -534,17 +553,14 @@ struct WebJobsContentView: UIViewRepresentable {
                 return
             }
             
-            // Handle phone/email links
             if url.scheme == "tel" || url.scheme == "mailto" {
                 AdMobManager.shared.openExternalURL(url)
                 decisionHandler(.cancel)
                 return
             }
             
-            // Handle external links (not your webapp domain)
             let hostString = url.host ?? ""
             if !hostString.contains("mobileworkvisajobs.pages.dev") && navigationAction.navigationType == .linkActivated {
-                // Use the new method that waits for ad to close
                 AdMobManager.shared.openExternalURL(url)
                 decisionHandler(.cancel)
                 return
