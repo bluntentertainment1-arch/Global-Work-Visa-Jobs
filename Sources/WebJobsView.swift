@@ -103,7 +103,7 @@ struct WebJobsView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        // FIX: Handle rotation changes to reset zoom
+        // FIX: Handle rotation changes
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             webViewModel.handleRotation()
         }
@@ -486,24 +486,32 @@ class WebJobsViewModel: ObservableObject {
     func handleRotation() {
         guard let webView = webView else { return }
         
-        // Reset zoom scale
-        webView.scrollView.zoomScale = 1.0
-        
-        // Reset content offset
-        webView.scrollView.setContentOffset(.zero, animated: false)
-        
-        // Force layout update
-        webView.setNeedsLayout()
-        webView.layoutIfNeeded()
-        
-        // Inject JavaScript to reset viewport zoom
-        let script = """
-            document.body.style.zoom = '1.0';
-            document.body.style.transform = 'scale(1.0)';
-            document.body.style.transformOrigin = '0 0';
-            window.scrollTo(0, 0);
-        """
-        webView.evaluateJavaScript(script, completionHandler: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // Reset zoom scale
+            webView.scrollView.zoomScale = 1.0
+            
+            // Reset content offset
+            webView.scrollView.setContentOffset(.zero, animated: false)
+            
+            // Force layout update
+            webView.setNeedsLayout()
+            webView.layoutIfNeeded()
+            
+            // Inject JavaScript to reset viewport
+            let script = """
+                (function() {
+                    document.body.style.zoom = '1.0';
+                    document.body.style.transform = 'scale(1.0)';
+                    document.body.style.transformOrigin = '0 0';
+                    window.scrollTo(0, 0);
+                    var meta = document.querySelector('meta[name=viewport]');
+                    if (meta) {
+                        meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+                    }
+                })();
+            """
+            webView.evaluateJavaScript(script, completionHandler: nil)
+        }
     }
 }
 
@@ -528,14 +536,12 @@ struct WebJobsContentView: UIViewRepresentable {
         
         // FIX: Ensure webview scales to fit
         webView.contentMode = .scaleToFill
-        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
-        // FIX: Handle viewport better
-        webView.scrollView.bounces = true
-        webView.scrollView.alwaysBounceVertical = true
-        
-        // FIX: Disable zoom gestures that cause rotation issues
+        // FIX: Lock zoom scale to prevent rotation zoom issues
         webView.scrollView.delegate = context.coordinator
+        webView.scrollView.minimumZoomScale = 1.0
+        webView.scrollView.maximumZoomScale = 1.0
+        webView.scrollView.bouncesZoom = false
         
         viewModel.webView = webView
         viewModel.load()
@@ -547,6 +553,9 @@ struct WebJobsContentView: UIViewRepresentable {
         DispatchQueue.main.async {
             viewModel.canGoBack = webView.canGoBack
             viewModel.canGoForward = webView.canGoForward
+            
+            // FIX: Force reset zoom scale on any update
+            webView.scrollView.zoomScale = 1.0
         }
     }
     
@@ -555,6 +564,11 @@ struct WebJobsContentView: UIViewRepresentable {
         
         init(_ parent: WebJobsContentView) {
             self.parent = parent
+        }
+        
+        // FIX: Prevent zooming by returning nil
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            return nil
         }
         
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -570,19 +584,46 @@ struct WebJobsContentView: UIViewRepresentable {
                 self.parent.viewModel.canGoBack = webView.canGoBack
                 self.parent.viewModel.canGoForward = webView.canGoForward
                 
-                // FIX: Inject viewport meta tag to prevent zoom issues
-                let viewportScript = """
-                    var viewport = document.querySelector('meta[name=viewport]');
-                    if (viewport) {
-                        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-                    } else {
-                        var meta = document.createElement('meta');
-                        meta.name = 'viewport';
-                        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-                        document.getElementsByTagName('head')[0].appendChild(meta);
-                    }
+                // FIX: Inject JavaScript to prevent zoom and handle rotation
+                let preventZoomScript = """
+                    (function() {
+                        // Set viewport to prevent zoom
+                        var meta = document.querySelector('meta[name=viewport]');
+                        if (meta) {
+                            meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+                        } else {
+                            meta = document.createElement('meta');
+                            meta.name = 'viewport';
+                            meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+                            document.getElementsByTagName('head')[0].appendChild(meta);
+                        }
+                        
+                        // Prevent double-tap zoom
+                        var lastTouchEnd = 0;
+                        document.addEventListener('touchend', function(event) {
+                            var now = (new Date()).getTime();
+                            if (now - lastTouchEnd <= 300) {
+                                event.preventDefault();
+                            }
+                            lastTouchEnd = now;
+                        }, false);
+                        
+                        // Reset any existing zoom
+                        document.body.style.zoom = '1.0';
+                        document.body.style.transform = 'scale(1.0)';
+                        document.body.style.transformOrigin = '0 0';
+                        
+                        // Handle orientation change
+                        window.addEventListener('orientationchange', function() {
+                            setTimeout(function() {
+                                window.scrollTo(0, 0);
+                                document.body.style.zoom = '1.0';
+                                document.body.style.transform = 'scale(1.0)';
+                            }, 100);
+                        });
+                    })();
                 """
-                webView.evaluateJavaScript(viewportScript, completionHandler: nil)
+                webView.evaluateJavaScript(preventZoomScript, completionHandler: nil)
             }
         }
         
@@ -626,11 +667,6 @@ struct WebJobsContentView: UIViewRepresentable {
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             decisionHandler(.allow)
-        }
-        
-        // FIX: Prevent zoom gestures
-        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-            return nil
         }
     }
 }
