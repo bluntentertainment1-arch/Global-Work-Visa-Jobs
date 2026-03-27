@@ -9,6 +9,7 @@ struct WebJobsView: View {
     @Binding var selectedTab: Int
     @StateObject private var webViewModel: WebJobsViewModel
     @State private var showMenu = false
+    @State private var orientation = UIDevice.current.orientation
     
     init(urlString: String, title: String, selectedTab: Binding<Int>) {
         self.urlString = urlString
@@ -25,16 +26,23 @@ struct WebJobsView: View {
             VStack(spacing: 0) {
                 customNavigationBar
                 
-                ZStack {
-                    if webViewModel.isLoading {
-                        ProgressView()
-                            .scaleEffect(1.2)
-                            .tint(themeManager.accentColor)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                    
-                    WebJobsContentView(viewModel: webViewModel)
+                // CRITICAL FIX: Use GeometryReader to force re-layout on rotation
+                GeometryReader { geometry in
+                    ZStack {
+                        if webViewModel.isLoading {
+                            ProgressView()
+                                .scaleEffect(1.2)
+                                .tint(themeManager.accentColor)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                        
+                        // CRITICAL FIX: Pass size to WebView
+                        WebJobsContentView(
+                            viewModel: webViewModel,
+                            size: geometry.size
+                        )
                         .opacity(webViewModel.isLoading ? 0 : 1)
+                    }
                 }
                 
                 VStack(spacing: 0) {
@@ -103,10 +111,13 @@ struct WebJobsView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        // Keep rotation handler but simplified
+        // CRITICAL FIX: Force rebuild on orientation change
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            orientation = UIDevice.current.orientation
             webViewModel.handleRotation()
         }
+        // CRITICAL FIX: Force rebuild when size changes
+        .id(orientation.isPortrait ? "portrait" : "landscape")
     }
     
     private var customNavigationBar: some View {
@@ -482,24 +493,41 @@ class WebJobsViewModel: ObservableObject {
         webView?.goForward()
     }
     
-    // Simplified rotation handler - let website handle scaling
+    // CRITICAL FIX: Handle rotation with delay to let iOS finish animation
     func handleRotation() {
         guard let webView = webView else { return }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            // Just trigger a layout update, website handles the rest
+        // Delay to let rotation animation complete
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            // Force frame update
+            let frame = webView.frame
+            webView.frame = CGRect(x: 0, y: 0, width: 0, height: 0)
+            webView.frame = frame
+            
+            // Reset zoom
+            webView.scrollView.zoomScale = 1.0
+            
+            // Force relayout
             webView.setNeedsLayout()
             webView.layoutIfNeeded()
             
-            // Optional: Notify website of orientation change
-            let script = "window.dispatchEvent(new Event('resize'));"
+            // Notify website
+            let script = """
+                window.dispatchEvent(new Event('resize'));
+                // Force recalculation
+                document.body.style.display = 'none';
+                document.body.offsetHeight;
+                document.body.style.display = '';
+            """
             webView.evaluateJavaScript(script, completionHandler: nil)
         }
     }
 }
 
+// CRITICAL FIX: Add size parameter to force re-creation on size change
 struct WebJobsContentView: UIViewRepresentable {
     @ObservedObject var viewModel: WebJobsViewModel
+    let size: CGSize
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -510,15 +538,20 @@ struct WebJobsContentView: UIViewRepresentable {
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
         
-        let webView = WKWebView(frame: .zero, configuration: configuration)
+        // CRITICAL: Create with actual frame size
+        let webView = WKWebView(frame: CGRect(origin: .zero, size: size), configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
         
-        // Let website handle its own scaling via viewport meta tag
+        // Let website handle scaling
         webView.scrollView.contentInsetAdjustmentBehavior = .automatic
-        
-        // Don't lock zoom - let website handle it
         webView.contentMode = .scaleToFill
+        
+        // CRITICAL: Disable zoom to prevent rotation zoom bug
+        webView.scrollView.delegate = context.coordinator
+        webView.scrollView.minimumZoomScale = 1.0
+        webView.scrollView.maximumZoomScale = 1.0
+        webView.scrollView.bouncesZoom = false
         
         viewModel.webView = webView
         viewModel.load()
@@ -526,18 +559,41 @@ struct WebJobsContentView: UIViewRepresentable {
         return webView
     }
     
+    // CRITICAL FIX: Recreate WebView when size changes significantly
     func updateUIView(_ webView: WKWebView, context: Context) {
+        // Check if size changed significantly (rotation)
+        let currentSize = webView.frame.size
+        let sizeChanged = abs(currentSize.width - size.width) > 50 || abs(currentSize.height - size.height) > 50
+        
+        if sizeChanged {
+            // Force frame update
+            webView.frame = CGRect(origin: .zero, size: size)
+            
+            // Reset zoom
+            webView.scrollView.zoomScale = 1.0
+            webView.scrollView.contentOffset = .zero
+            
+            // Force relayout
+            webView.setNeedsLayout()
+            webView.layoutIfNeeded()
+        }
+        
         DispatchQueue.main.async {
             viewModel.canGoBack = webView.canGoBack
             viewModel.canGoForward = webView.canGoForward
         }
     }
     
-    class Coordinator: NSObject, WKNavigationDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
         var parent: WebJobsContentView
         
         init(_ parent: WebJobsContentView) {
             self.parent = parent
+        }
+        
+        // Prevent zooming
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            return nil
         }
         
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -553,17 +609,17 @@ struct WebJobsContentView: UIViewRepresentable {
                 self.parent.viewModel.canGoBack = webView.canGoBack
                 self.parent.viewModel.canGoForward = webView.canGoForward
                 
-                // Minimal injection - just ensure viewport is set
-                // Website should already have this, but as fallback
-                let checkViewportScript = """
-                    if (!document.querySelector('meta[name=viewport]')) {
-                        var meta = document.createElement('meta');
+                // Ensure viewport is set
+                let viewportScript = """
+                    var meta = document.querySelector('meta[name=viewport]');
+                    if (!meta) {
+                        meta = document.createElement('meta');
                         meta.name = 'viewport';
-                        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
                         document.getElementsByTagName('head')[0].appendChild(meta);
                     }
                 """
-                webView.evaluateJavaScript(checkViewportScript, completionHandler: nil)
+                webView.evaluateJavaScript(viewportScript, completionHandler: nil)
             }
         }
         
