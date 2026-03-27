@@ -103,6 +103,10 @@ struct WebJobsView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
+        // FIX: Handle rotation changes to reset zoom
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            webViewModel.handleRotation()
+        }
     }
     
     private var customNavigationBar: some View {
@@ -477,6 +481,30 @@ class WebJobsViewModel: ObservableObject {
     func goForward() {
         webView?.goForward()
     }
+    
+    // FIX: Handle rotation to reset zoom
+    func handleRotation() {
+        guard let webView = webView else { return }
+        
+        // Reset zoom scale
+        webView.scrollView.zoomScale = 1.0
+        
+        // Reset content offset
+        webView.scrollView.setContentOffset(.zero, animated: false)
+        
+        // Force layout update
+        webView.setNeedsLayout()
+        webView.layoutIfNeeded()
+        
+        // Inject JavaScript to reset viewport zoom
+        let script = """
+            document.body.style.zoom = '1.0';
+            document.body.style.transform = 'scale(1.0)';
+            document.body.style.transformOrigin = '0 0';
+            window.scrollTo(0, 0);
+        """
+        webView.evaluateJavaScript(script, completionHandler: nil)
+    }
 }
 
 struct WebJobsContentView: UIViewRepresentable {
@@ -494,7 +522,20 @@ struct WebJobsContentView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
-        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        
+        // FIX: Allow content to adjust to safe areas properly
+        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
+        
+        // FIX: Ensure webview scales to fit
+        webView.contentMode = .scaleToFill
+        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
+        // FIX: Handle viewport better
+        webView.scrollView.bounces = true
+        webView.scrollView.alwaysBounceVertical = true
+        
+        // FIX: Disable zoom gestures that cause rotation issues
+        webView.scrollView.delegate = context.coordinator
         
         viewModel.webView = webView
         viewModel.load()
@@ -509,7 +550,7 @@ struct WebJobsContentView: UIViewRepresentable {
         }
     }
     
-    class Coordinator: NSObject, WKNavigationDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
         var parent: WebJobsContentView
         
         init(_ parent: WebJobsContentView) {
@@ -528,6 +569,20 @@ struct WebJobsContentView: UIViewRepresentable {
                 self.parent.viewModel.isLoading = false
                 self.parent.viewModel.canGoBack = webView.canGoBack
                 self.parent.viewModel.canGoForward = webView.canGoForward
+                
+                // FIX: Inject viewport meta tag to prevent zoom issues
+                let viewportScript = """
+                    var viewport = document.querySelector('meta[name=viewport]');
+                    if (viewport) {
+                        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                    } else {
+                        var meta = document.createElement('meta');
+                        meta.name = 'viewport';
+                        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+                        document.getElementsByTagName('head')[0].appendChild(meta);
+                    }
+                """
+                webView.evaluateJavaScript(viewportScript, completionHandler: nil)
             }
         }
         
@@ -571,6 +626,11 @@ struct WebJobsContentView: UIViewRepresentable {
         
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
             decisionHandler(.allow)
+        }
+        
+        // FIX: Prevent zoom gestures
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            return nil
         }
     }
 }
