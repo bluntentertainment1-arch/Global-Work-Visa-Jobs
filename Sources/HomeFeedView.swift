@@ -31,10 +31,10 @@ struct HomeFeedView: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [
+                                gradient: Gradient(colors: [
                                     themeManager.accentColor.opacity(0.2),
                                     themeManager.accentColor.opacity(0.05)
-                                ],
+                                ]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -62,15 +62,10 @@ struct HomeFeedView: View {
                         .tracking(4)
                         .foregroundColor(themeManager.secondaryText)
                     
+                    // FIX: Use accentColor directly instead of LinearGradient
                     Text("Visa Jobs")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundColor(
-                            LinearGradient(
-                                colors: [themeManager.accentColor, themeManager.accentColor.opacity(0.8)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .foregroundColor(themeManager.accentColor)
                 }
                 .padding(.bottom, 24)
                 
