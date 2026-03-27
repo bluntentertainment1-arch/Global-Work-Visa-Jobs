@@ -383,7 +383,7 @@ class WebViewController: UIViewController {
     
     // CRITICAL: Handle rotation at UIKit level
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with coordinator)
+        super.viewWillTransition(to: size, with: coordinator)
         
         // Animate the transition
         coordinator.animate(alongsideTransition: { _ in
